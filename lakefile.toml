@@ -16,4 +16,4 @@ rev = "v4.30.0"
 
 [[lean_lib]]
 name = "TworowD4Kernel"
-globs = ["TworowD4Kernel.+"]
+globs = ["TworowD4Kernel", "TworowD4Kernel.+"]

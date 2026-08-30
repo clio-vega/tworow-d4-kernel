@@ -3,9 +3,7 @@ Copyright (c) 2026 Clio. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Clio
 -/
-import Mathlib.Data.Nat.Choose.Basic
-import Mathlib.Data.Nat.Factorial.Basic
-import Mathlib.NumberTheory.Padics.PadicVal.Basic
+import TworowD4Kernel.ArithKernel
 import TworowD4Kernel.B0modKernel
 import TworowD4Kernel.LemmaF
 import TworowD4Kernel.SubsetIdentityGeneralC
@@ -16,62 +14,22 @@ import TworowD4Kernel.ThreeRowC4Boundary
 import TworowD4Kernel.ThreeRowC4InteriorN4
 
 /-!
-# Arithmetic kernel of the two-row `d = 4` law for `b ≡ 1 (mod 4)`
+# Two-row / three-row `d = 4` fiber-vanishing kernels
 
-This file formalises the two self-contained arithmetic lemmas that are load-bearing in the
-2-adic proof of the two-row `d = 4` fiber-vanishing law for the infinite family `b ≡ 1 (mod 4)`
-(`~/projects/proofs/2026-06-07-tworow-d4-b1mod4-proved.md`). The full theorem rests on
-generating-function machinery not present in Mathlib; these two lemmas are the part of the
-argument a skeptic would most want machine-checked, namely the valuation bookkeeping.
+Root aggregator. This module contains no declarations of its own; it exists so that
+`import TworowD4Kernel` pulls in the whole development.
 
-## Main results
+The two arithmetic kernel lemmas of the `b ≡ 1 (mod 4)` proof
+(`descFactorial_eq_factorial_mul_self_mul_choose_pred` and
+`padicValNat_two_factorial_two_mul`) used to be stated *here*. They now live in the leaf
+module `TworowD4Kernel.ArithKernel`, which this file re-exports, so their fully qualified
+names are unchanged. The move was forced: `D0ClosedForms` needs the doubling identity, and
+the root reaches `D0ClosedForms` transitively via
+`SubsetIdentityGeneralC → NumberLemmaC2`, so stating them here made the import graph
+cyclic and `lake build` failed outright.
 
-* `TworowD4Kernel.descFactorial_eq_factorial_mul_self_mul_choose_pred` (§2.1, "the `j = 1` term
-  is exact"): the integer identity
-  `(m)_{R+1} = R! · (m · C(m-1, R))`
-  that makes `τ₁(m) = (m)_{R+1} / R!` an honest integer and pins its 2-adic valuation.
-
-* `TworowD4Kernel.padicValNat_two_factorial_two_mul` (§2.3, "the 2-adic doubling identity"): the
-  load-bearing valuation step
-  `v₂((2h)!) = h + v₂(h!)`,
-  here obtained directly from Mathlib's Legendre-theorem corollary `padicValNat_factorial_mul`.
-
-## References
-
-The informal proof is `2026-06-07-tworow-d4-b1mod4-proved.md`; the relevant sections are
-referenced inline (§2.1 and §2.3).
+Note that `CompensationLemma`, `D0ClosedForms`, `Fp2Irreducible`, `GaussianUnitSum`,
+`HookKummerLemmas`, `NumberLemmaC2`, `PadicNoRoot` and `QuantumInteger` are reached either
+transitively through the imports above or by the `TworowD4Kernel.+` glob in `lakefile.toml`,
+which is what `lake build` actually builds.
 -/
-
-namespace TworowD4Kernel
-
-open Nat
-
-/-- **§2.1 — the falling-factorial / binomial bridge ("the `j = 1` term is exact").**
-
-For integers `m ≥ R + 1 ≥ 1` the falling factorial `(m)_{R+1} = m(m-1)⋯(m-R)` (here
-`Nat.descFactorial m (R + 1)`) factors as `R! · (m · C(m-1, R))`. This is the identity that
-makes `τ₁(m) = (m)_{R+1} / R!` an honest integer in §2.1 of the proof and pins its valuation
-`v₂(τ₁(m)) = v₂((m)_{R+1}) - v₂(R!)`. -/
-theorem descFactorial_eq_factorial_mul_self_mul_choose_pred (m R : ℕ) (h : R + 1 ≤ m) :
-    Nat.descFactorial m (R + 1) = R ! * (m * Nat.choose (m - 1) R) := by
-  -- Since `R + 1 ≤ m`, `m` is a successor; write `m = k + 1` so that `m - 1 = k`.
-  obtain _ | k := m
-  · exact absurd h (by omega)
-  · simp only [Nat.add_sub_cancel]
-    -- `(m)_{R+1} = (R+1)! · C(m, R+1)` and `(R+1)! = (R+1) · R!`;
-    -- `(k+1) · C(k, R) = C(k+1, R+1) · (R+1)` is `Nat.add_one_mul_choose_eq`.
-    rw [Nat.descFactorial_eq_factorial_mul_choose, Nat.factorial_succ,
-      Nat.add_one_mul_choose_eq]
-    ring
-
-/-- **§2.3 — the 2-adic doubling identity.**
-
-`v₂((2h)!) = h + v₂(h!)` for every `h`. This is the load-bearing valuation step used to evaluate
-the closed form for `D_j` in §2.3. It is the `p = 2` instance of Legendre's theorem in the form
-`padicValNat p (p * n)! = padicValNat p n! + n` (`Nat.padicValNat_factorial_mul`). -/
-theorem padicValNat_two_factorial_two_mul (h : ℕ) :
-    padicValNat 2 (2 * h)! = h + padicValNat 2 h ! := by
-  haveI : Fact (Nat.Prime 2) := ⟨Nat.prime_two⟩
-  rw [padicValNat_factorial_mul, Nat.add_comm]
-
-end TworowD4Kernel
