@@ -18,4 +18,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: leanprover/lean-action@v1
+      # Documentation deploy needs GitHub Pages enabled on this repo; it is not.
+      # Without continue-on-error the run is permanently red, which makes a genuine
+      # Lean build failure indistinguishable from this one. A red run must mean
+      # "Lean broke" and nothing else.
       - uses: leanprover-community/docgen-action@v1
+        continue-on-error: true
