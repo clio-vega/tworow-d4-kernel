@@ -17,7 +17,31 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+      # WHY axiom-audit IS ON (2026-09-01).
+      # Until today this step was `- uses: leanprover/lean-action@v1` with no inputs,
+      # and a green badge did NOT exclude a `sorry`: run 33370053897 on branch
+      # `ci-negative-control` built `theorem ci_negative_control : 2 + 2 = 5 := by sorry`,
+      # emitted only `warning: ... declaration uses 'sorry'`, and finished `success`.
+      # A `sorry` is a warning to `lake build`, never an error, so the build step
+      # cannot be the detector.
+      #
+      # The earlier diagnosis -- that `nanoda-allow-sorry: true` in the log was to
+      # blame -- was wrong. `nanoda` itself defaults to "false", so that step was
+      # gated off and never ran; the input was an unused default being echoed.
+      # Likewise `axiom-audit` defaulted to "false", hence `outcome=skipped`.
+      #
+      # `axiom-audit` fails the run if any declaration under the root namespace
+      # transitively depends on an axiom outside the allowlist. It is an ALLOWLIST,
+      # which is the only sound shape: `sorryAx` and the per-declaration
+      # `<decl>._native.native_decide.ax_*` that Lean 4.30.0 generates for
+      # `native_decide` cannot be enumerated in advance, so no blocklist can catch
+      # them. The allowlist below is the same standard three that every
+      # `#print axioms` in this project is asserted equal to.
       - uses: leanprover/lean-action@v1
+        with:
+          axiom-audit: true
+          axiom-audit-allow: "propext,Classical.choice,Quot.sound"
+          axiom-audit-root: "TworowD4Kernel"
       # Documentation deploy needs GitHub Pages enabled on this repo; it is not.
       # Without continue-on-error the run is permanently red, which makes a genuine
       # Lean build failure indistinguishable from this one. A red run must mean
