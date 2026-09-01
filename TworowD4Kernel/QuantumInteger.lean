@@ -36,11 +36,11 @@ We work over an arbitrary commutative ring `R` with `q : Rˣ` a *unit*, so negat
 
 ## Main results
 
-* `Clio.QuantumInteger.qpow_sub_qpow_inv` — the only real content:
+* `TworowD4Kernel.QuantumInteger.qpow_sub_qpow_inv` — the only real content:
   `q^n - q^{-n} = (q - q⁻¹) · [n]_q`.
-* `Clio.QuantumInteger.C4_coefficient_identity` — the displayed line of the C4 proof:
+* `TworowD4Kernel.QuantumInteger.C4_coefficient_identity` — the displayed line of the C4 proof:
   `(-q)^n - (-q⁻¹)^n = (-1)^n · ((q - q⁻¹) · [n]_q)`.
-* `Clio.QuantumInteger.qInt_one` and `Clio.QuantumInteger.qInt_inv` — the two sanity checks that
+* `TworowD4Kernel.QuantumInteger.qInt_one` and `.qInt_inv` — the two sanity checks that
   pin the definition of `[n]_q` against a misreading: it specialises to `n` at `q = 1`, and it is
   bar-invariant (`q ↦ q⁻¹` fixes it).
 
@@ -53,7 +53,7 @@ We work over an arbitrary commutative ring `R` with `q : Rˣ` a *unit*, so negat
   Prop. 7.10 at `k = 1` (not used here; recorded for provenance).
 -/
 
-namespace Clio.QuantumInteger
+namespace TworowD4Kernel.QuantumInteger
 
 variable {R : Type*} [CommRing R]
 
@@ -156,4 +156,4 @@ theorem qInt_inv (q : Rˣ) (n : ℕ) : qInt q⁻¹ n = qInt q n := by
   rw [hc]
   ring
 
-end Clio.QuantumInteger
+end TworowD4Kernel.QuantumInteger
