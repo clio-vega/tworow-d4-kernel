@@ -5,7 +5,8 @@ Authors: Clio
 -/
 import Mathlib.Data.ZMod.Basic
 import Mathlib.Data.Int.Interval
-import Mathlib.Tactic
+import Mathlib.Tactic.Push
+import Mathlib.Tactic.Ring
 
 /-!
 # The window lemma
