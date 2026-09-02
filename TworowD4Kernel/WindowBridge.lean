@@ -193,6 +193,26 @@ theorem card_le_sub_one_of_residue_ne
   · rw [Finset.card_image_of_injective _ (uglovLabel_injective_residue d)]
     simp [Finset.card_erase_of_mem]
 
+/-- **Non-vacuity, and sharpness of the constant.** The hypotheses of
+`card_le_sub_one_of_runner_ne` are satisfiable with the bound attained, so the theorem is
+not vacuously true and `ℓ - 1` is not a slack constant.
+
+Take `n = 2`, `l = 3`, so `N = 6`; `c = 0`, `d = 0`, window `[0, 6)`. The two labels
+`(0,1)` and `(0,2)` are the residues `2` and `4`, realised by the beads `2` and `4`. So
+`S = {2, 4}` has `S.card = 2 = l - 1`.
+
+The same witness is a negative control on the constant: it refutes `S.card ≤ l - 2`. -/
+example :
+    ∃ S : Finset ℤ, S ⊆ Finset.Ico (0 : ℤ) (0 + ((2 * 3 : ℕ) : ℤ)) ∧
+      (∀ k ∈ S, ∃ d' : Fin 3, d' ≠ (0 : Fin 3) ∧
+        (k : ZMod (2 * 3)) = uglovLabel (0 : Fin 2) d') ∧
+      S.card = 3 - 1 := by
+  refine ⟨{2, 4}, by decide, ?_, by decide⟩
+  intro k hk
+  fin_cases hk
+  · exact ⟨1, by decide, by decide⟩
+  · exact ⟨2, by decide, by decide⟩
+
 end Label
 
 end TworowD4Kernel
