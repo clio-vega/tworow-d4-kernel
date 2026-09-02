@@ -13,6 +13,7 @@ import TworowD4Kernel.QuantumInteger
 import TworowD4Kernel.LemmaF
 import TworowD4Kernel.SubsetIdentityGeneralC
 import TworowD4Kernel.WindowLemma
+import TworowD4Kernel.WindowBridge
 import TworowD4Kernel.ThreeRowC1Boundary
 import TworowD4Kernel.ThreeRowC2Boundary
 import TworowD4Kernel.ThreeRowC3Boundary
