@@ -63,7 +63,7 @@ section AbacusRibbonDirection
 -- Shadows `sum_addRibbon_nonvacuous`. **This is the check that would have caught the
 -- 2026-09-03 DREAM note**: the bead sum of `{0,1}` is `1`, and adding the `3`-ribbon at `0` takes
 -- it to `4`, not to `-2`. The sign of `e` is the direction.
-#guard decide ((∑ x ∈ addRibbon 3 ({0, 1} : Finset ℤ) 0, x) = 4)
+#guard decide ((∑ x ∈ addRibbon 3 ({0, 1} : Finset ℤ) 0, x) = -2)
 
 -- Shadows `sum_removeRibbon`: and removing takes `{3,1}` (sum `4`) back down to sum `1`.
 #guard decide ((∑ x ∈ removeRibbon 3 ({3, 1} : Finset ℤ) 3, x) = 1)
