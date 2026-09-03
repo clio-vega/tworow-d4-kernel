@@ -42,31 +42,58 @@ The window hypothesis is stated for the half-open `Finset.Ico p (p + N)`, which 
 the paper's open window `(p, p+N)`; a caller holding the stronger hypothesis applies these
 results directly.
 
-Three things are deliberately *not* formalised here, and remain on paper. They are the
-gap between these theorems and `cor:range` as the paper states it.
+**One** thing is deliberately not formalised here, and it is the boundary of this module:
 
-1. **The identification of the counts.** The paper's `a` is defined as
-   `#{d' > d : κ ∈ M_{d'}} + #{d' < d : κ + e ∈ M_{d'}}`, in the `κ`-coordinate. That this
-   equals the count `a'` of beads in the `k`-coordinate window is the last paragraph of the
-   proof of `thm:closed` (solving `eq:kcd` to get `μ' = μ` for `d' > d` and `μ' = μ - 1`
-   for `d' < d`). Here `S` *is* the `k`-coordinate set; the change of coordinate is assumed.
-2. **Surjectivity — the "exactly once" half.** The paper's §`sec:conv` remark says each
-   label other than `k`'s own occurs in the window *exactly* once. Only "at most once" is
-   proved here, because only that half is needed for an upper bound. The existence half is
-   what would make the bounds *attained*, and is not established below.
-3. **The lower bounds `0 ≤ a`, `0 ≤ h`** are trivial for a cardinality and are not stated.
+* **The identification of the counts — the `κ`-coordinate ↔ `k`-coordinate change.** The
+  paper's `a` is defined as `#{d' > d : κ ∈ M_{d'}} + #{d' < d : κ + e ∈ M_{d'}}`, in the
+  `κ`-coordinate. That this equals the count of beads in the `k`-coordinate window is the
+  last paragraph of the proof of `thm:closed` (solving `eq:kcd` to get `μ' = μ` for
+  `d' > d` and `μ' = μ - 1` for `d' < d`). Here `S` *is* the `k`-coordinate set; the change
+  of coordinate is **assumed**, and closing it needs the abacus given a type. This is the
+  next target and it is a multi-session piece of work.
 
-Correspondingly, `uglovLabel` is proved injective only along each axis separately
-(`uglovLabel_injective_runner`, `uglovLabel_injective_residue`), not jointly: the two
-counts each vary one coordinate with the other fixed, so separate injectivity is exactly
-what the mathematics uses.
+The lower bounds `0 ≤ a`, `0 ≤ h` are trivial for a cardinality and are not stated.
+
+### What changed on 2026-09-03
+
+Two overclaims recorded in the previous version of this docstring are now closed.
+
+* **Joint injectivity.** `uglovLabel` used to be proved injective only along each axis
+  separately, which is all the two counting arguments use — but "the label *is* the
+  residue" is the *joint* statement, and it was not proved. `uglovLabel_injective` now
+  proves it, and `uglovLabel_bijective` / `existsUnique_label` give the bijection with
+  `ZMod (nℓ)` that the phrase actually asserts.
+* **Surjectivity — the "exactly once" half.** Only "at most once" used to be proved,
+  because only that half is needed for an upper bound. `card_filter_window_labels` now
+  supplies the other half, and `exists_card_eq_sub_one_of_runner_ne` /
+  `exists_card_eq_sub_one_of_residue_ne` upgrade the two bounds of `cor:range` from bounds
+  to **attained** bounds, with `existsUnique_window_of_label` recording §`sec:conv`'s
+  "exactly once" remark in full.
+
+  Honest limit, which has *not* moved: this is sharpness of the **Lean** statement over an
+  arbitrary `Finset ℤ` meeting the hypotheses. It is **not** the paper's attainment claim,
+  which is about a genuine bead configuration and so waits on the abacus above.
 
 ## Mathlib
 
-`Finset.card_le_card_of_injOn`, `ZMod.intCast_zmod_eq_zero_iff_dvd`,
+`Finset.card_le_card_of_injOn`, `Finset.card_bij`, `ZMod.intCast_zmod_eq_zero_iff_dvd`,
 `Int.eq_zero_of_abs_lt_dvd` and `ZMod.val_cast_of_lt` do all the work; searched `v4.30.0`
 under `Mathlib/Data/ZMod/` and `Mathlib/Data/Finset/Card.lean` for the bridge in this form
 and found nothing stating it.
+
+For joint injectivity, `finProdFinEquiv : Fin m × Fin n ≃ Fin (m * n)`
+(`Mathlib/Logic/Equiv/Fin/Basic.lean`) was searched first and is *not* directly reusable,
+for two reasons worth recording rather than rediscovering: it sends `(x, y) ↦ y + n * x`,
+so matching `uglovLabel` needs the factors in the order `ℓ * n` and then a transport along
+`Nat.mul_comm`; and its codomain is `Fin (nℓ)`, which is not `ZMod (nℓ)` without a
+`NeZero` hypothesis that `uglovLabel_injective` does not otherwise need. Its `left_inv`
+field is proved by `Nat.add_mul_mod_self_left` and `Nat.add_mul_div_left`, and
+`add_mul_inj_of_lt` below simply uses those two core lemmas directly — the same
+mathematics, without the packaging.
+
+`ZMod.chineseRemainder` is **not** applicable: `n` and `ℓ` need not be coprime. This is
+positional notation, not CRT, and the proof uses `c < n` essentially — see the control
+attached to `add_mul_inj_of_lt`.
 -/
 
 namespace TworowD4Kernel
@@ -110,6 +137,28 @@ theorem card_le_card_of_window_labels (p : ℤ) (S : Finset ℤ) (L : Finset (ZM
     S.card ≤ L.card :=
   Finset.card_le_card_of_injOn (fun k : ℤ => (k : ZMod N)) hL
     ((window_injOn p).mono (by exact_mod_cast hS))
+
+/-- **Exactly once, in counting form.** The integers of a window of `N` consecutive
+integers whose residue lies in a prescribed collection `L` of classes number *exactly*
+`L.card` — not merely at most, as in `card_le_card_of_window_labels`.
+
+This is the surjective half that `TworowD4Kernel.card_window_eq_one` supplies and that the
+upper-bound argument did not need. It is what turns the bounds of `cor:range` from bounds
+into attained bounds. -/
+theorem card_filter_window_labels [NeZero N] (p : ℤ) (L : Finset (ZMod N)) :
+    ((Finset.Ico p (p + N)).filter (fun k : ℤ => (k : ZMod N) ∈ L)).card = L.card := by
+  classical
+  refine Finset.card_bij (fun k _ => (k : ZMod N)) (fun k hk => (Finset.mem_filter.1 hk).2)
+    ?_ ?_
+  · intro k hk k' hk' h
+    exact window_injOn p (Finset.mem_coe.2 (Finset.mem_filter.1 hk).1)
+      (Finset.mem_coe.2 (Finset.mem_filter.1 hk').1) h
+  · intro r hr
+    obtain ⟨k, hk⟩ := Finset.card_eq_one.1 (card_window_eq_one N p r)
+    have hkm : k ∈ (Finset.Ico p (p + N)).filter (fun k : ℤ => (k : ZMod N) = r) := by
+      rw [hk]; exact Finset.mem_singleton_self k
+    rw [Finset.mem_filter] at hkm
+    exact ⟨k, Finset.mem_filter.2 ⟨hkm.1, hkm.2 ▸ hr⟩, hkm.2⟩
 
 end Window
 
@@ -155,6 +204,63 @@ theorem uglovLabel_injective_residue (d : Fin l) :
     Function.Injective (fun c : Fin n => uglovLabel c d) := by
   intro c c' h
   exact Fin.ext (by have := uglovLabel_rep_inj h; omega)
+
+/-- **Positional notation is unique.** If `c, c' < n` then `c + n * d = c' + n * d'`
+forces `c = c'` and `d = d'`.
+
+This is the arithmetic core of joint injectivity below, and the place where `c < n` is
+*used*: without it the conclusion is false (`0 + 2 * 1 = 2 + 2 * 0`). It is the same pair
+of core lemmas — `Nat.add_mul_mod_self_left` and `Nat.add_mul_div_left` — that Mathlib's
+`finProdFinEquiv.left_inv` uses (`Mathlib/Logic/Equiv/Fin/Basic.lean`); see the module
+docstring for why the equivalence itself is not reusable here. -/
+private lemma add_mul_inj_of_lt {n c c' d d' : ℕ} (hc : c < n) (hc' : c' < n)
+    (h : c + n * d = c' + n * d') : c = c' ∧ d = d' := by
+  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le c) hc
+  constructor
+  · have := congrArg (· % n) h
+    simpa [Nat.add_mul_mod_self_left, Nat.mod_eq_of_lt hc, Nat.mod_eq_of_lt hc'] using this
+  · have := congrArg (· / n) h
+    simpa [Nat.add_mul_div_left _ _ hn, Nat.div_eq_of_lt hc, Nat.div_eq_of_lt hc'] using this
+
+/-- **Control for `add_mul_inj_of_lt`: `c < n` is load-bearing, not decorative.** Drop it
+and the conclusion is false — at `n = 2`, `0 + 2 * 1 = 2 + 2 * 0` with `0 ≠ 2`. So a proof
+of the lemma that never used `hc` would be proving something untrue. -/
+theorem add_mul_inj_of_lt_needs_lt : (0 : ℕ) + 2 * 1 = 2 + 2 * 0 ∧ (0 : ℕ) ≠ 2 := by
+  decide
+
+/-- **Joint injectivity of the label map.** Distinct pairs `(c, d)` carry distinct labels.
+
+This is the honest content of "the label *is* the residue": `k = c + n(d-1)` read mod
+`N = nℓ` is base-`n` positional notation with `n` digits and `ℓ` places, so recovering
+`(c, d)` from the residue is uniqueness of quotient-and-remainder by `n`.
+
+Note that this is *not* an instance of `ZMod.chineseRemainder`: `n` and `ℓ` need not be
+coprime (in the application `ℓ` is a multiple of nothing in particular, and `n = ℓ` is
+allowed). The proof goes through `add_mul_inj_of_lt`, which uses `c < n` essentially. -/
+theorem uglovLabel_injective :
+    Function.Injective (fun p : Fin n × Fin l => uglovLabel p.1 p.2) := by
+  rintro ⟨c, d⟩ ⟨c', d'⟩ h
+  obtain ⟨h1, h2⟩ := add_mul_inj_of_lt c.isLt c'.isLt (uglovLabel_rep_inj h)
+  exact Prod.ext (Fin.ext h1) (Fin.ext h2)
+
+/-- **Non-vacuity for `uglovLabel_injective`**, with both `n ≥ 2` and `ℓ ≥ 2`: two pairs
+differing in *both* coordinates get distinct labels. Axis-wise injectivity does not see
+this pair. -/
+theorem uglovLabel_injective_nonvacuous :
+    uglovLabel (0 : Fin 2) (1 : Fin 3) ≠ uglovLabel (1 : Fin 2) (2 : Fin 3) := by decide
+
+/-- **The control: the statement can fail.** Joint injectivity is a statement about the
+modulus, not a formality. The same formula read mod `n` instead of mod `n * ℓ` is *not*
+injective — the runner is invisible mod `n`. A proof of `uglovLabel_injective` that would
+also typecheck for this map would be measuring nothing.
+
+(`decide` here evaluates a `ZMod 2` equality on two explicit pairs of `Fin 2 × Fin 3`.) -/
+theorem uglovLabel_not_injective_mod_n :
+    ¬ Function.Injective
+      (fun p : Fin 2 × Fin 3 => (((p.1 : ℕ) + 2 * (p.2 : ℕ) : ℕ) : ZMod 2)) := by
+  intro hinj
+  have : ((0 : Fin 2), (0 : Fin 3)) = ((0 : Fin 2), (1 : Fin 3)) := hinj (by decide)
+  exact absurd this (by decide)
 
 /-- **`cor:range`, the `a` bound.** Beads in a window of `N = n * ℓ` consecutive integers
 whose label has first coordinate `c` and runner different from `d` number at most `ℓ - 1`.
@@ -212,6 +318,101 @@ example :
   fin_cases hk
   · exact ⟨1, by decide, by decide⟩
   · exact ⟨2, by decide, by decide⟩
+
+/-! ### Exactly once: the surjective half
+
+Everything below needs `N = n * ℓ` to be nonzero, i.e. both `n ≥ 1` and `ℓ ≥ 1`. That is
+no restriction in the application (`n = e ≥ 2`, `ℓ ≥ 1`), but at `N = 0` the ambient
+`ZMod 0 = ℤ` is infinite and the counting statements are false, so the hypothesis is real.
+-/
+
+section Attained
+
+variable {n l : ℕ} [NeZero (n * l)]
+
+/-- **The label map is a bijection onto the residues mod `N = nℓ`.** Injectivity is
+`uglovLabel_injective`; surjectivity is then forced by counting, since `Fin n × Fin ℓ` and
+`ZMod (nℓ)` both have `nℓ` elements.
+
+This is the precise sense in which "the label *is* the residue" (§`sec:conv`, eq.
+`eq:kcd`, Uglov `arXiv:math/9905196` §3). -/
+theorem uglovLabel_bijective :
+    Function.Bijective (fun p : Fin n × Fin l => uglovLabel p.1 p.2) := by
+  rw [Fintype.bijective_iff_injective_and_card]
+  exact ⟨uglovLabel_injective, by simp [ZMod.card]⟩
+
+/-- **Every bead has exactly one label.** The converse reading of `uglovLabel_bijective`:
+given `k ∈ ℤ`, the pair `(c, d)` with `k ≡ c + n(d-1)` exists and is unique. Uniqueness is
+exactly the joint injectivity of `uglovLabel`; axis-wise injectivity does not give it. -/
+theorem existsUnique_label (k : ℤ) :
+    ∃! q : Fin n × Fin l, (k : ZMod (n * l)) = uglovLabel q.1 q.2 := by
+  obtain ⟨q, hq⟩ := uglovLabel_bijective.surjective (k : ZMod (n * l))
+  exact ⟨q, hq.symm, fun q' hq' => uglovLabel_bijective.injective (hq'.symm.trans hq.symm)⟩
+
+/-- **Each label occurs exactly once in a window.** The paper's §`sec:conv` remark, in
+full: in a window of `N = nℓ` consecutive integers there is exactly one bead carrying any
+prescribed label `(c, d)`. -/
+theorem existsUnique_window_of_label (p : ℤ) (c : Fin n) (d : Fin l) :
+    ∃! k : ℤ, k ∈ Finset.Ico p (p + (n * l : ℕ)) ∧
+      (k : ZMod (n * l)) = uglovLabel c d := by
+  obtain ⟨k, hk⟩ := Finset.card_eq_one.1 (card_window_eq_one (n * l) p (uglovLabel c d))
+  have hmem : ∀ y : ℤ, (y ∈ Finset.Ico p (p + (n * l : ℕ)) ∧
+      (y : ZMod (n * l)) = uglovLabel c d) ↔ y = k := by
+    intro y
+    constructor
+    · intro hy
+      exact Finset.mem_singleton.1 (hk ▸ Finset.mem_filter.2 hy)
+    · rintro rfl
+      have hkm : y ∈ ({y} : Finset ℤ) := Finset.mem_singleton_self y
+      rw [← hk, Finset.mem_filter] at hkm
+      exact hkm
+  exact ⟨k, (hmem k).2 rfl, fun y hy => (hmem y).1 hy⟩
+
+/-- **`cor:range`, the `a` bound, is attained.** In *any* window of `N = nℓ` consecutive
+integers there is a set `S` of beads satisfying the hypotheses of
+`card_le_sub_one_of_runner_ne` with `S.card = ℓ - 1` exactly. So the constant `ℓ - 1` is
+the truth, not slack: `a` is not merely bounded by `ℓ - 1`, it equals it.
+
+This is `card_le_sub_one_of_runner_ne` upgraded from a bound to an attained bound. The
+honest limit is unchanged: this is sharpness of the *Lean* statement over an arbitrary
+`Finset ℤ` meeting the hypotheses. It is **not** the paper's attainment claim, which is
+about a genuine bead configuration and therefore needs the abacus (gap 1 of the module
+docstring). -/
+theorem exists_card_eq_sub_one_of_runner_ne (c : Fin n) (d : Fin l) (p : ℤ) :
+    ∃ S : Finset ℤ, S ⊆ Finset.Ico p (p + (n * l : ℕ)) ∧
+      (∀ k ∈ S, ∃ d' : Fin l, d' ≠ d ∧ (k : ZMod (n * l)) = uglovLabel c d') ∧
+      S.card = l - 1 := by
+  classical
+  refine ⟨(Finset.Ico p (p + (n * l : ℕ))).filter
+      (fun k : ℤ => (k : ZMod (n * l)) ∈
+        (Finset.univ.erase d).image (fun d' : Fin l => uglovLabel c d')),
+    Finset.filter_subset _ _, ?_, ?_⟩
+  · intro k hk
+    obtain ⟨d', hd', hkd⟩ := Finset.mem_image.1 (Finset.mem_filter.1 hk).2
+    exact ⟨d', (Finset.mem_erase.1 hd').1, hkd.symm⟩
+  · rw [card_filter_window_labels,
+      Finset.card_image_of_injective _ (uglovLabel_injective_runner c)]
+    simp [Finset.card_erase_of_mem]
+
+/-- **`cor:range`, the `h` bound, is attained.** As `exists_card_eq_sub_one_of_runner_ne`,
+along the other axis: the constant `n - 1 = e - 1` is realised in every window. -/
+theorem exists_card_eq_sub_one_of_residue_ne (c : Fin n) (d : Fin l) (p : ℤ) :
+    ∃ S : Finset ℤ, S ⊆ Finset.Ico p (p + (n * l : ℕ)) ∧
+      (∀ k ∈ S, ∃ c' : Fin n, c' ≠ c ∧ (k : ZMod (n * l)) = uglovLabel c' d) ∧
+      S.card = n - 1 := by
+  classical
+  refine ⟨(Finset.Ico p (p + (n * l : ℕ))).filter
+      (fun k : ℤ => (k : ZMod (n * l)) ∈
+        (Finset.univ.erase c).image (fun c' : Fin n => uglovLabel c' d)),
+    Finset.filter_subset _ _, ?_, ?_⟩
+  · intro k hk
+    obtain ⟨c', hc', hkd⟩ := Finset.mem_image.1 (Finset.mem_filter.1 hk).2
+    exact ⟨c', (Finset.mem_erase.1 hc').1, hkd.symm⟩
+  · rw [card_filter_window_labels,
+      Finset.card_image_of_injective _ (uglovLabel_injective_residue d)]
+    simp [Finset.card_erase_of_mem]
+
+end Attained
 
 end Label
 
