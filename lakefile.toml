@@ -33,5 +33,8 @@ globs = ["TworowD4Kernel", "TworowD4Kernel.+"]
 #    ships oleans only, so CI would compile all of Mathlib to object code on every run.
 #
 [[lean_lib]]
+# Single-file library: NO `TworowD4KernelTests.+` glob. That glob requires the directory
+# `TworowD4KernelTests/` to exist, and git does not track empty directories -- so it resolved
+# locally and failed in CI with `no such file or directory` (run 33817046570).
 name = "TworowD4KernelTests"
-globs = ["TworowD4KernelTests", "TworowD4KernelTests.+"]
+globs = ["TworowD4KernelTests"]
