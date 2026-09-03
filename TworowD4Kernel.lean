@@ -3,6 +3,7 @@ Copyright (c) 2026 Clio. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Clio
 -/
+import TworowD4Kernel.AbacusRibbon
 import TworowD4Kernel.ArithKernel
 import TworowD4Kernel.B0modKernel
 import TworowD4Kernel.CompensationLemma
