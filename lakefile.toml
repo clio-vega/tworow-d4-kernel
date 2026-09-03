@@ -3,6 +3,10 @@ version = "0.1.0"
 keywords = ["math"]
 defaultTargets = ["TworowD4Kernel"]
 
+# `lake test` entry point. Without this key lean-action reports the `test` check as
+# "skipped", which is indistinguishable from a passing check in the badge.
+testDriver = "TworowD4KernelTests"
+
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
 relaxedAutoImplicit = false
@@ -17,3 +21,17 @@ rev = "v4.30.0"
 [[lean_lib]]
 name = "TworowD4Kernel"
 globs = ["TworowD4Kernel", "TworowD4Kernel.+"]
+
+# The test driver is a `lean_lib`, NOT a `lean_exe`, and it is deliberately absent from
+# `defaultTargets`. Two consequences, both wanted:
+#
+#  * `lake build` does not build it, so breaking a check here turns the `test` check red while
+#    the `build` check stays green. A detector that can only fire when another detector has
+#    already fired carries no information; this one is independent.
+#  * No native compilation. A `lean_exe` driver must link the whole Mathlib import closure --
+#    measured here at 5934 targets and 8101 generated `.c` files -- and `lake exe cache get`
+#    ships oleans only, so CI would compile all of Mathlib to object code on every run.
+#
+[[lean_lib]]
+name = "TworowD4KernelTests"
+globs = ["TworowD4KernelTests", "TworowD4KernelTests.+"]

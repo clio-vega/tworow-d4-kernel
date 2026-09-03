@@ -1,0 +1,104 @@
+/-
+Copyright (c) 2026 Clio. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Clio
+-/
+import TworowD4Kernel
+
+/-!
+# `lake test` driver: the non-vacuity witnesses, evaluated
+
+Every check below is `#guard` on the *same decidable proposition* as a `by decide` witness
+theorem in the library. `#guard p` evaluates `p` by kernel reduction and errors if it is `false`,
+so a wrong expected value here fails `lake test`.
+
+## Why this library is not in `defaultTargets`
+
+Because it must be able to fail *alone*. If the test driver were part of the default build,
+breaking a check would turn the `build` check red too, and the `test` check would carry no
+information beyond it — a detector that can only fire when another has already fired is not a
+detector. Kept out of `defaultTargets`, this library is built by `lake test` and by nothing else.
+
+Each check names the theorem it shadows.
+-/
+
+open TworowD4Kernel Finset
+
+-- `#guard` is exactly the point of this file; the Mathlib style linter bans `#`-commands in
+-- library code, which this is not.
+set_option linter.hashCommand false
+
+
+section WindowBridge
+
+-- Shadows `uglovLabel_injective_nonvacuous`.
+#guard decide (uglovLabel (0 : Fin 2) (1 : Fin 3) ≠ uglovLabel (1 : Fin 2) (2 : Fin 3))
+
+-- Shadows `uglovLabel_not_injective_mod_n`: the collision it exhibits really collides ...
+#guard decide ((((0 : ℕ) + 2 * (0 : ℕ) : ℕ) : ZMod 2) = (((0 : ℕ) + 2 * (1 : ℕ) : ℕ) : ZMod 2))
+
+-- ... and its two arguments really differ.
+#guard decide (((0 : Fin 2), (0 : Fin 3)) ≠ ((0 : Fin 2), (1 : Fin 3)))
+
+end WindowBridge
+
+section AbacusRibbonInverse
+
+-- Shadows `addRibbon_removeRibbon_nonvacuous`.
+#guard decide (removeRibbon 3 (addRibbon 3 ({0, 1} : Finset ℤ) 0) 3 = ({0, 1} : Finset ℤ))
+
+-- Shadows `removeRibbon_addRibbon`.
+#guard decide (addRibbon 3 (removeRibbon 3 ({3, 1} : Finset ℤ) 3) 0 = ({3, 1} : Finset ℤ))
+
+-- Shadows `addRibbon_mem_self`: the bead really is at `b + e` afterwards.
+#guard decide ((3 : ℤ) ∈ addRibbon 3 ({0, 1} : Finset ℤ) 0)
+
+-- Shadows `addRibbon_notMem_self`: and `b` really is vacated.
+#guard decide ((0 : ℤ) ∉ addRibbon 3 ({0, 1} : Finset ℤ) 0)
+
+end AbacusRibbonInverse
+
+section AbacusRibbonDirection
+
+-- Shadows `sum_addRibbon_nonvacuous`. **This is the check that would have caught the
+-- 2026-09-03 DREAM note**: the bead sum of `{0,1}` is `1`, and adding the `3`-ribbon at `0` takes
+-- it to `4`, not to `-2`. The sign of `e` is the direction.
+#guard decide ((∑ x ∈ addRibbon 3 ({0, 1} : Finset ℤ) 0, x) = 4)
+
+-- Shadows `sum_removeRibbon`: and removing takes `{3,1}` (sum `4`) back down to sum `1`.
+#guard decide ((∑ x ∈ removeRibbon 3 ({3, 1} : Finset ℤ) 3, x) = 1)
+
+end AbacusRibbonDirection
+
+section AbacusRibbonHeight
+
+-- Shadows `ribbonHeight_nonvacuous`: an *intermediate* height, neither `0` nor `e - 1`.
+#guard decide (ribbonHeight 3 ({0, 2} : Finset ℤ) 0 = 1)
+
+-- Shadows `ribbonHeight_Ico_nonvacuous`: the upper end `e - 1 = 2` is attained.
+-- Written out as `{0,1,2}` rather than `Finset.Ico (0 : ℤ) 3` because `#guard` *compiles* its
+-- argument, and the `LocallyFiniteOrder ℤ` instance is noncomputable in Mathlib v4.30.0
+-- (kernel reduction inside `decide` is fine, native compilation is not). The two are the same
+-- Finset, and that is itself checked here rather than asserted:
+example : Finset.Ico (0 : ℤ) 3 = ({0, 1, 2} : Finset ℤ) := by decide
+#guard decide (ribbonHeight 3 ({0, 1, 2} : Finset ℤ) 0 = 2)
+
+-- Shadows `ribbonHeight_singleton`: the lower end `0` is attained.
+#guard decide (ribbonHeight 3 ({0} : Finset ℤ) 0 = 0)
+
+-- Shadows `ribbonHeight_addRibbon`: the height survives the move.
+#guard decide (ribbonHeight 3 (addRibbon 3 ({0, 2} : Finset ℤ) 0) 0
+  = ribbonHeight 3 ({0, 2} : Finset ℤ) 0)
+
+end AbacusRibbonHeight
+
+section NegativeControl
+
+-- Shadows `addRibbon_collision`: with the side condition `b + e ∉ M` dropped, the two beads
+-- collide and the round trip lands on `{0}`.
+#guard decide (removeRibbon 2 (addRibbon 2 ({0, 2} : Finset ℤ) 0) 2 = ({0} : Finset ℤ))
+
+-- Shadows `exists_addRibbon_not_removeRibbon_of_mem`: so it is *not* the identity.
+#guard decide (removeRibbon 2 (addRibbon 2 ({0, 2} : Finset ℤ) 0) 2 ≠ ({0, 2} : Finset ℤ))
+
+end NegativeControl
