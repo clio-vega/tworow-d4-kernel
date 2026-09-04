@@ -102,3 +102,31 @@ section NegativeControl
 #guard decide (removeRibbon 2 (addRibbon 2 ({0, 2} : Finset ℤ) 0) 2 ≠ ({0, 2} : Finset ℤ))
 
 end NegativeControl
+
+section Maya
+
+/-! `Maya.size` is **noncomputable** — `wt` decides set membership through
+`Classical.propDecidable` — and `#guard` *compiles* its argument, so the checks in this section
+cannot be `#guard`s. They are statement-pinning `example`s instead: each restates the numeral a
+library theorem claims and discharges it by that theorem, so editing the numeral in the library
+breaks `lake test` here. This is a weaker detector than the `#guard`s above and is labelled as
+such: it detects a changed *statement*, not a changed *value*. -/
+
+-- Shadows `Maya.size_nil`: the vacuum has size `0`.
+example : Maya.nil.size = 0 := Maya.size_nil
+
+-- Shadows `Maya.size_onebox`: regime 1, the bead crosses the vacuum line. `|(1)| = 1`.
+example : Maya.onebox.size = 1 := Maya.size_onebox
+
+-- Shadows `Maya.size_addRibbon_above`: regime 2, entirely above the line. `1 + 2 = 3`.
+example : (Maya.onebox.addRibbon 2 0).size = 3 := Maya.size_addRibbon_above
+
+-- Shadows `Maya.size_addRibbon_below`: regime 3, entirely below the line. `1 + 2 = 3`.
+example : (Maya.onebox.addRibbon 2 (-3)).size = 3 := Maya.size_addRibbon_below
+
+-- Shadows `Maya.exists_size_addRibbon_ne_of_mem`: the negative control. Dropping `b + e ∉ M`
+-- makes the size theorem false, so the hypothesis is load-bearing.
+example : ∃ (e : ℕ) (M : Maya) (b : ℤ), 0 < e ∧ b ∈ M.carrier ∧ b + (e : ℤ) ∈ M.carrier ∧
+    (M.addRibbon e b).size ≠ M.size + (e : ℤ) := Maya.exists_size_addRibbon_ne_of_mem
+
+end Maya
