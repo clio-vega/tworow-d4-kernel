@@ -14,14 +14,14 @@ Neither branch is ever to be merged.
 
 | Branch | Plants | Breaks | Detector it proves alive |
 |---|---|---|---|
-| `ci-negative-control` | `theorem ci_negative_control : 2 + 2 = 5 := by sorry` in `TworowD4Kernel/NegativeControl.lean`, imported from the root | the **axiom-audit** step | a `sorry` cannot reach a green badge |
-| `ci-test-negative-control` | flips `#guard decide ((∑ x ∈ addRibbon 3 ({0,1} : Finset ℤ) 0, x) = 4)` to `= -2` in `TworowD4KernelTests.lean` | the **test** step (`lake test`) | the test driver actually runs, and pins the ribbon *direction* |
+| `NEGATIVE-CONTROL-expected-red-axiom-audit` | `theorem ci_negative_control : 2 + 2 = 5 := by sorry` in `TworowD4Kernel/NegativeControl.lean`, imported from the root | the **axiom-audit** step | a `sorry` cannot reach a green badge |
+| `NEGATIVE-CONTROL-expected-red-test-driver` | flips `#guard decide ((∑ x ∈ addRibbon 3 ({0,1} : Finset ℤ) 0, x) = 4)` to `= -2` in `TworowD4KernelTests.lean` | the **test** step (`lake test`) | the test driver actually runs, and pins the ribbon *direction* |
 
 They are deliberately aimed at **different detectors**. The `sorry` is invisible to `lake build`
 and the `#guard` is invisible to the axiom audit, so neither control can pass by accident
 because the other detector fired.
 
-### `ci-negative-control` — expected failure
+### `NEGATIVE-CONTROL-expected-red-axiom-audit` — expected failure
 
 Planted at `TworowD4Kernel/NegativeControl.lean:8`. The build step **succeeds**, emitting only
 
@@ -46,7 +46,7 @@ unimported file with a `sorry` in it is not audited at all.
 
 Reference run: `33551104884` (failure, 1m48s).
 
-### `ci-test-negative-control` — expected failure
+### `NEGATIVE-CONTROL-expected-red-test-driver` — expected failure
 
 Planted in `TworowD4KernelTests.lean`, `section AbacusRibbonDirection`. The bead sum of `{0,1}`
 is `1`; adding the `3`-ribbon at `0` takes it to `4`, not to `-2`. The `-2` is the direction
@@ -74,8 +74,8 @@ false, and the run history refutes it:**
 
 | Run | Branch | Result | Wall |
 |---|---|---|---|
-| `33551104884` | `ci-negative-control` | failure (expected) | 1m48s |
-| `33817055657` | `ci-test-negative-control` | failure (expected) | 1m30s |
+| `33551104884` | `NEGATIVE-CONTROL-expected-red-axiom-audit` | failure (expected) | 1m48s |
+| `33817055657` | `NEGATIVE-CONTROL-expected-red-test-driver` | failure (expected) | 1m30s |
 | `33817046570` | **`main`** | failure (**genuine breakage**) | **1m45s** |
 | `33920018865` | `main` | success | 44m09s |
 | `33848574291` | `main` | success | 44m22s |
@@ -93,7 +93,7 @@ step name does not discriminate either.
 **What actually discriminates is the branch name**, which is why it appears in the failure-email
 subject and why the branches are named to be read there. Rules for triage:
 
-- Branch name contains `negative-control` → **expected red. This is a pass.** Do nothing.
+- Branch name contains `NEGATIVE-CONTROL` → **expected red. This is a pass.** Do nothing.
 - Branch is `main` and the run is red → **genuine breakage**, regardless of how fast it was.
 
 ---
@@ -116,3 +116,17 @@ negative-control branch exercises this path, so **there is currently no live neg
 for the `Maya` size theorems** — a wrong numeral there would be caught only if the corresponding
 `example` were updated to match, which is precisely the failure mode an `example`-based pin
 cannot see.
+
+---
+
+## Branch rename (2026-09-05)
+
+The branches were renamed from `ci-negative-control` and `ci-test-negative-control` so that the
+discriminator is unmissable in the failure-email subject, which has the form
+`Run failed: Lean Action CI - <branch> (<sha>)`:
+
+- `ci-negative-control` → `NEGATIVE-CONTROL-expected-red-axiom-audit`
+- `ci-test-negative-control` → `NEGATIVE-CONTROL-expected-red-test-driver`
+
+Commit SHAs are unchanged; the old remote refs are deleted. The rename itself triggers one
+fresh red run per branch, and those two reds are expected.
