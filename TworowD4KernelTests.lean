@@ -130,3 +130,31 @@ example : ∃ (e : ℕ) (M : Maya) (b : ℤ), 0 < e ∧ b ∈ M.carrier ∧ b + 
     (M.addRibbon e b).size ≠ M.size + (e : ℤ) := Maya.exists_size_addRibbon_ne_of_mem
 
 end Maya
+
+section SignedCount
+
+/-! `signedSubsetCount` is **computable** — `Finset.Ico` on `ℕ`, `powerset` and `card` all reduce
+— so unlike the `Maya` section these are genuine `#guard`s on values, not statement pins. -/
+
+-- Shadows `signedSubsetCount_eq_zero`: the vanishing branch, `m ≤ k - 2`.
+#guard decide (signedSubsetCount 5 0 = 0)
+#guard decide (signedSubsetCount 5 2 = 0)
+#guard decide (signedSubsetCount 5 3 = 0)
+#guard decide (signedSubsetCount 7 1 = 0)
+
+-- Shadows `signedSubsetCount_of_succ` / `signedSubsetCount_pred`: `m = k - 1` gives `-1`,
+-- the single term `T = ∅`. This is the boundary the paper's prose elides.
+#guard decide (signedSubsetCount 5 4 = -1)
+#guard decide (signedSubsetCount 1 0 = -1)
+#guard decide (signedSubsetCount 7 6 = -1)
+
+-- Shadows `signedSubsetCount_self`: **the sum model returns `-1` at `m = k`, not the paper's
+-- `+1`.** If this ever evaluates to `1`, the `m < k` hypothesis has been wrongly dropped.
+#guard decide (signedSubsetCount 5 5 = -1)
+
+-- Shadows `signedSubsetCount_eq_neg_zero_pow`: the closed form under `0 ^ 0 = 1`, checked
+-- against the sum on both sides of the boundary.
+#guard decide (signedSubsetCount 6 4 = -(0 : ℤ) ^ (6 - 1 - 4))
+#guard decide (signedSubsetCount 6 5 = -(0 : ℤ) ^ (6 - 1 - 5))
+
+end SignedCount
