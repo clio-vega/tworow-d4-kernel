@@ -11,6 +11,7 @@ import TworowD4Kernel.Fp2Irreducible
 import TworowD4Kernel.GaussianUnitSum
 import TworowD4Kernel.PadicNoRoot
 import TworowD4Kernel.PhiNonvanishing
+import TworowD4Kernel.PrefixSignSum
 import TworowD4Kernel.QuantumInteger
 import TworowD4Kernel.LemmaF
 import TworowD4Kernel.Maya

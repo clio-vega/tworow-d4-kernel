@@ -158,3 +158,52 @@ section SignedCount
 #guard decide (signedSubsetCount 6 5 = -(0 : ℤ) ^ (6 - 1 - 5))
 
 end SignedCount
+
+
+section PrefixSignSum
+
+/-! `prefixSignSum` is **computable** by construction — `ascList` is `List.range` filtered, not
+`Finset.sort`, precisely so that the kernel and the evaluator can both run it. `k = 3,4,5` are
+also `decide`-proved in the library; `k = 6,7` are here only, because `decide` blows
+`maxRecDepth` on 64 subsets while the compiled evaluator does not. -/
+
+-- Shadows `prefixSignSum_eq_three` / `_four` / `_five`: no nonempty `S̄ ⊆ [k]` disagrees with
+-- `prop:N`. The empty counterexample set is the assertion.
+#guard ((Icc 1 3).powerset.filter
+  (fun S => S ≠ ∅ ∧ prefixSignSum 3 S ≠ prefixSignSumRHS 3 S)) = ∅
+#guard ((Icc 1 4).powerset.filter
+  (fun S => S ≠ ∅ ∧ prefixSignSum 4 S ≠ prefixSignSumRHS 4 S)) = ∅
+#guard ((Icc 1 5).powerset.filter
+  (fun S => S ≠ ∅ ∧ prefixSignSum 5 S ≠ prefixSignSumRHS 5 S)) = ∅
+
+-- Beyond what `decide` can reach in the library.
+#guard ((Icc 1 6).powerset.filter
+  (fun S => S ≠ ∅ ∧ prefixSignSum 6 S ≠ prefixSignSumRHS 6 S)) = ∅
+#guard ((Icc 1 7).powerset.filter
+  (fun S => S ≠ ∅ ∧ prefixSignSum 7 S ≠ prefixSignSumRHS 7 S)) = ∅
+
+/-! The three branches of `prop:N` at `k = 4`, on named values rather than on a quantifier, so
+that a wrong *sign convention* — not just a wrong theorem — fails `lake test`. -/
+
+-- Branch 1: `k-1 ∈ S̄`, `k ∉ S̄`, value `(-1)^|S̄|`.
+#guard decide (prefixSignSum 4 {3} = -1)
+#guard decide (prefixSignSum 4 {1, 3} = 1)
+
+-- Branch 2: `k ∈ S̄`, `k-1 ∉ S̄`, value `(-1)^(|S̄|-1)`.
+#guard decide (prefixSignSum 4 {4} = 1)
+#guard decide (prefixSignSum 4 {1, 4} = -1)
+
+-- Branch 3, THE VANISHING BRANCH — both of `k-1, k`, and neither. A lemma whose only tests are
+-- nonzero has not tested the case that carries the theorem.
+#guard decide (prefixSignSum 4 {3, 4} = 0)
+#guard decide (prefixSignSum 4 {1, 2} = 0)
+#guard decide (prefixSignSum 4 {1, 2, 3, 4} = 0)
+
+-- Shadows `rho_getElem_peak`: the peak really is at index `|T|`, so `q = |T| + 1` and the
+-- source's `(-1)^(q-1)` is `wordSign T`. `ρ_{{1,3}} = [1,3,4,2]` for `k = 4`.
+#guard decide (rho 4 {1, 3} = [1, 3, 4, 2])
+#guard decide (rho 4 ∅ = [4, 3, 2, 1])
+#guard decide (rho 4 {1, 2, 3} = [1, 2, 3, 4])
+#guard ((Icc 1 5).powerset.filter (fun T => (rho 6 T)[T.card]? ≠ some 6)) = ∅
+
+end PrefixSignSum
