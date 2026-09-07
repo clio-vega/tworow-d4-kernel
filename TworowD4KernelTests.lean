@@ -231,3 +231,49 @@ private def topBlockPaper (k : ℕ) (S₀ : Finset ℕ) : Finset ℕ :=
   (fun S₀ => (topBlock 6 S₀ = ∅) ≠ (5 ∉ S₀))) = ∅
 
 end PrefixSignSum
+
+/-! ## The one-bead matrix element of `R_f R_e` (2026-09-07)
+
+Independent kernel cross-checks of `TworowD4Kernel.matrixElem_one_bead` and its commutator
+corollary — evaluated route sets and weights, **not** a reproof. Two instances, chosen so the
+route population varies: the first has both routes present, the second has both absent in one
+order and both present in the other. A check that could not distinguish those two would be
+constant in the direction it tests.
+
+Instance 1: `e = 2`, `f = 3`, `M = {0,3,4}`, `b = 0`, so `b+e+f = 5 ∉ M`, `M' = {3,4,5}`.
+`m(b+e) = m(2) = 0` (route B present), `m(b+f) = m(3) = 1` (route C present), `N = 2`. -/
+section CrossRankOneBead
+
+private def M₁ : Finset ℤ := {0, 3, 4}
+private def M₁' : Finset ℤ := addRibbon (2 + 3) M₁ 0
+
+#guard decide (M₁' = ({3, 4, 5} : Finset ℤ))
+#guard decide (ribbonHeight (2 + 3) M₁ 0 = 2)
+-- Route B `(b, b+e) = (0,2)` and route C `(b+f, b) = (3,0)`, and nothing else.
+#guard decide (routes 2 3 M₁ M₁' = ({(0, 2), (3, 0)} : Finset (ℤ × ℤ)))
+-- The two weights: `N` and `N - 1`. This is the pair the window lemmas compute.
+#guard decide (routeWeight 2 3 M₁ 0 2 = 2)
+#guard decide (routeWeight 2 3 M₁ 3 0 = 1)
+-- `⟨M'|R_f R_e|M⟩ = (1-0) t² + 1·t¹`, evaluated at `t = 3`: `9 + 3 = 12`.
+#guard decide (matrixElem 2 3 M₁ M₁' (3 : ℤ) = 12)
+-- `⟨M'|R_e R_f|M⟩ = (1-1) t² + 0·t¹ = 0`.
+#guard decide (matrixElem 3 2 M₁ M₁' (3 : ℤ) = 0)
+-- The commutator, and `1 + t = 4` dividing it: `-12 = -3 * 4`.
+#guard decide (matrixElem 3 2 M₁ M₁' (3 : ℤ) - matrixElem 2 3 M₁ M₁' (3 : ℤ) = -12)
+
+/-! Instance 2: `e = 1`, `f = 2`, `M = {0,1}`, `b = 0`, so `b+e+f = 3 ∉ M`, `M' = {1,3}`.
+Now `m(b+e) = m(1) = 1` and `m(b+f) = m(2) = 0`, so **both routes are absent** in the order
+`R_f R_e` and both are present in the order `R_e R_f`. `N = 1`, so the `t^(N-1) = t^0` term is
+the one that would expose an off-by-one in the interval convention. -/
+private def M₂ : Finset ℤ := {0, 1}
+private def M₂' : Finset ℤ := addRibbon (1 + 2) M₂ 0
+
+#guard decide (M₂' = ({1, 3} : Finset ℤ))
+#guard decide (ribbonHeight (1 + 2) M₂ 0 = 1)
+#guard decide (routes 1 2 M₂ M₂' = (∅ : Finset (ℤ × ℤ)))
+#guard decide (routes 2 1 M₂ M₂' = ({(0, 2), (1, 0)} : Finset (ℤ × ℤ)))
+#guard decide (matrixElem 1 2 M₂ M₂' (3 : ℤ) = 0)
+-- `t¹ + t⁰ = 3 + 1 = 4` at `t = 3`; the `t⁰` summand is route C's `t^(N-1)`.
+#guard decide (matrixElem 2 1 M₂ M₂' (3 : ℤ) = 4)
+
+end CrossRankOneBead
