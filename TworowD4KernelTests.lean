@@ -206,4 +206,28 @@ that a wrong *sign convention* — not just a wrong theorem — fails `lake test
 #guard decide (rho 4 {1, 2, 3} = [1, 2, 3, 4])
 #guard ((Icc 1 5).powerset.filter (fun T => (rho 6 T)[T.card]? ≠ some 6)) = ∅
 
+/-! ## The general-`k` `prop:N` (2026-09-07)
+
+`prefixSignSum_eq` is proved for all `k ≥ 2`, so the `#guard`s above are no longer the only
+evidence at `k = 6,7`. What still needs testing is the *new definition* the Lean proof
+introduces: `topBlock`, which replaces the source's `Y = (m*, k-1]`, `m* = max([k-1] \ S̄₀)`
+with the convention `m* := 0` when that set is empty. A definition of mine is a primary source
+and gets its own warrant — so assert the two agree, on every `S̄₀`, including the empty-`m*` and
+empty-`Y` cases the convention exists to paper over. -/
+
+-- The source's `Y`, transcribed literally, `max` convention and all.
+private def topBlockPaper (k : ℕ) (S₀ : Finset ℕ) : Finset ℕ :=
+  Ioc ((Icc 1 (k - 1) \ S₀).max.getD 0) (k - 1)
+
+#guard ((Icc 1 5).powerset.filter (fun S₀ => topBlock 6 S₀ ≠ topBlockPaper 6 S₀)) = ∅
+#guard ((Icc 1 6).powerset.filter (fun S₀ => topBlock 7 S₀ ≠ topBlockPaper 7 S₀)) = ∅
+-- `k = 2`: `[k-1] = {1}`, so `S₀ = ∅` gives `m* = 1`, `Y = ∅`, and `S₀ = {1}` gives `m* = 0`,
+-- `Y = {1}`. Both extremes of the convention, at the smallest `k` the theorem claims.
+#guard decide (topBlock 2 ∅ = (∅ : Finset ℕ))
+#guard decide (topBlock 2 {1} = ({1} : Finset ℕ))
+
+-- Shadows `topBlock_eq_empty_iff`: emptiness of `Y` is exactly `k-1 ∉ S̄₀`.
+#guard ((Icc 1 5).powerset.filter
+  (fun S₀ => (topBlock 6 S₀ = ∅) ≠ (5 ∉ S₀))) = ∅
+
 end PrefixSignSum

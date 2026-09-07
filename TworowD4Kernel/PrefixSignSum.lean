@@ -8,6 +8,7 @@ import Mathlib.Data.List.Sort
 import Mathlib.Data.Finset.Powerset
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Order.Interval.Finset.Nat
+import Mathlib.Data.Nat.Choose.Sum
 
 /-!
 # The prefix sign sum `N(S̄)`
@@ -308,36 +309,409 @@ theorem take_reverse_ascList_toFinset {j : ℕ} (hT : T ⊆ range k) (hj : j ≤
   · rintro ⟨hs1, hs2, hs3⟩
     exact eq_of_gt_sdiff h1 hs1 (h2.trans hs2.symm) h3 hs3
 
+/-- **The reindexing.** The `T` with `A ⊆ T ⊆ A ⊔ Y` are exactly the `A ∪ B`, `B ⊆ Y`, and the
+signed count over them collapses by the alternating sum. Both cases of `prop:N` are instances. -/
+theorem sum_interval_sign (A Y U : Finset ℕ) (hAY : Disjoint A Y) (hAU : A ⊆ U) (hYU : Y ⊆ U) :
+    ∑ T ∈ U.powerset, (if A ⊆ T ∧ T ⊆ A ∪ Y then ((-1 : ℤ)) ^ T.card else 0)
+      = (-1) ^ A.card * (if Y = ∅ then 1 else 0) := by
+  rw [← Finset.sum_filter]
+  rw [Finset.sum_nbij' (i := fun T => T \ A) (j := fun B => A ∪ B)
+      (t := Y.powerset) (g := fun B => (-1 : ℤ) ^ A.card * (-1) ^ B.card)]
+  · rw [← Finset.mul_sum, Finset.sum_powerset_neg_one_pow_card]
+  · intro T hT
+    simp only [Finset.mem_filter, Finset.mem_powerset] at hT
+    simp only [Finset.mem_powerset]
+    intro x hx
+    rw [Finset.mem_sdiff] at hx
+    rcases Finset.mem_union.mp (hT.2.2 hx.1) with h | h
+    · exact absurd h hx.2
+    · exact h
+  · intro B hB
+    rw [Finset.mem_powerset] at hB
+    simp only [Finset.mem_filter, Finset.mem_powerset]
+    exact ⟨Finset.union_subset hAU (hB.trans hYU), Finset.subset_union_left,
+      Finset.union_subset_union_right hB⟩
+  · intro T hT
+    simp only [Finset.mem_filter, Finset.mem_powerset] at hT
+    ext x
+    simp only [Finset.mem_union, Finset.mem_sdiff]
+    by_cases hxA : x ∈ A
+    · simp [hxA, hT.2.1 hxA]
+    · simp [hxA]
+  · intro B hB
+    rw [Finset.mem_powerset] at hB
+    exact Finset.union_sdiff_cancel_left (hAY.mono_right hB)
+  · intro T hT
+    simp only [Finset.mem_filter, Finset.mem_powerset] at hT
+    rw [← pow_add]
+    congr 1
+    have := Finset.card_sdiff_add_card_eq_card hT.2.1
+    omega
+
+/-! ## Splitting the prefix across the append -/
+
+/-- Regime `r ≤ m`: the prefix never reaches the peak, so it is a prefix of `ascList k T`. -/
+theorem rho_take_of_le {r : ℕ} (hT : T ⊆ range k) (hr : r ≤ T.card) :
+    (rho k T).take r = (ascList k T).take r := by
+  refine List.take_append_of_le_length ?_
+  rw [ascList_length hT]; exact hr
+
+/-- Regimes `r ≥ m+1`: the prefix has reached the peak, so it contains the letter `k`. -/
+theorem mem_rho_take_of_gt {r : ℕ} (hT : T ⊆ range k) (hr : T.card < r) :
+    k ∈ ((rho k T).take r).toFinset := by
+  rw [List.mem_toFinset]
+  refine List.mem_of_getElem? (i := T.card) ?_
+  rw [List.getElem?_take, if_pos hr, rho_getElem_peak hT]
+
+/-! ## Case `k ∉ S̄`: only the regime `r ≤ m` survives -/
+
+/-- The prefix condition, for `k ∉ S̄`, is exactly "`T` lies between `S̄` and `S̄ ∪ (max S̄, k-1]`".
+Source: `2026-09-05-Q85-literal-gcd.tex`, `prop:N`, case `k ∉ \bar S`. -/
+theorem prefix_condition_not_mem (_hk : 2 ≤ k) (hne : S.Nonempty) (hkS : k ∉ S)
+    (_hSk : S ⊆ Icc 1 (k - 1)) (hT : T ⊆ Icc 1 (k - 1)) :
+    (((rho k T).take S.card).toFinset = S)
+      ↔ (S ⊆ T ∧ T ⊆ S ∪ Ioc (S.max' hne) (k - 1)) := by
+  have hTr : T ⊆ range k := hT.trans (Icc_one_sub_subset_range k)
+  rcases lt_or_ge T.card S.card with hlt | hge
+  · -- the prefix has reached the peak, so it contains `k ∉ S̄`
+    constructor
+    · intro h
+      exact absurd (h ▸ mem_rho_take_of_gt hTr hlt) hkS
+    · rintro ⟨h1, -⟩
+      exact absurd (Finset.card_le_card h1) (by omega)
+  · rw [rho_take_of_le hTr hge, take_ascList_toFinset hTr hge]
+    constructor
+    · rintro ⟨h1, -, h3⟩
+      refine ⟨h1, fun x hx => ?_⟩
+      by_cases hxS : x ∈ S
+      · exact Finset.mem_union_left _ hxS
+      · refine Finset.mem_union_right _ (Finset.mem_Ioc.mpr ⟨?_, ?_⟩)
+        · exact h3 _ (S.max'_mem hne) x (Finset.mem_sdiff.mpr ⟨hx, hxS⟩)
+        · exact (Finset.mem_Icc.mp (hT hx)).2
+    · rintro ⟨h1, h2⟩
+      refine ⟨h1, rfl, fun x hx y hy => ?_⟩
+      rw [Finset.mem_sdiff] at hy
+      rcases Finset.mem_union.mp (h2 hy.1) with h | h
+      · exact absurd h hy.2
+      · exact lt_of_le_of_lt (S.le_max' x hx) (Finset.mem_Ioc.mp h).1
+
+/-- `prop:N`, case `k ∉ S̄`, for every `k ≥ 2`.
+Source: `2026-09-05-Q85-literal-gcd.tex`, `prop:N`, case `k \notin \bar S`. -/
+theorem prefixSignSum_eq_of_not_mem (hk : 2 ≤ k) (hS : S ⊆ Icc 1 k) (hne : S.Nonempty)
+    (hkS : k ∉ S) : prefixSignSum k S = prefixSignSumRHS k S := by
+  have hSk : S ⊆ Icc 1 (k - 1) := by
+    intro x hx
+    have hx' := Finset.mem_Icc.mp (hS hx)
+    rw [Finset.mem_Icc]
+    refine ⟨hx'.1, ?_⟩
+    rcases Nat.lt_or_ge x k with h | h
+    · omega
+    · exact absurd (le_antisymm hx'.2 h ▸ hx) hkS
+  set M := S.max' hne with hM
+  have hMmem := hSk (S.max'_mem hne)
+  have hMk : M ≤ k - 1 := (Finset.mem_Icc.mp hMmem).2
+  have hM1 : 1 ≤ M := (Finset.mem_Icc.mp hMmem).1
+  have hdisj : Disjoint S (Ioc M (k - 1)) := by
+    rw [Finset.disjoint_right]
+    intro x hx hxS
+    have := (Finset.mem_Ioc.mp hx).1
+    exact absurd (S.le_max' x hxS) (by omega)
+  have hYU : Ioc M (k - 1) ⊆ Icc 1 (k - 1) := by
+    intro x hx
+    have hx' := Finset.mem_Ioc.mp hx
+    exact Finset.mem_Icc.mpr ⟨by omega, hx'.2⟩
+  have hstep : prefixSignSum k S
+      = ∑ T ∈ (Icc 1 (k - 1)).powerset,
+          (if S ⊆ T ∧ T ⊆ S ∪ Ioc M (k - 1) then ((-1 : ℤ)) ^ T.card else 0) := by
+    refine Finset.sum_congr rfl fun T hT => ?_
+    rw [Finset.mem_powerset] at hT
+    rw [wordSign]
+    exact if_congr (prefix_condition_not_mem hk hne hkS hSk hT) rfl rfl
+  rw [hstep, sum_interval_sign S (Ioc M (k - 1)) (Icc 1 (k - 1)) hdisj hSk hYU]
+  -- `(M, k-1] = ∅` iff `max S̄ = k-1` iff `k-1 ∈ S̄`, since `k ∉ S̄`.
+  have hiff : Ioc M (k - 1) = ∅ ↔ k - 1 ∈ S := by
+    constructor
+    · intro h
+      have hMeq : M = k - 1 := by
+        by_contra hne'
+        have hmem : k - 1 ∈ Ioc M (k - 1) := Finset.mem_Ioc.mpr ⟨by omega, le_rfl⟩
+        rw [h] at hmem
+        exact absurd hmem (Finset.notMem_empty _)
+      rw [← hMeq]
+      exact S.max'_mem hne
+    · intro h
+      have hMeq : M = k - 1 := le_antisymm hMk (S.le_max' _ h)
+      rw [hMeq, Finset.Ioc_self]
+  simp only [hiff]
+  by_cases hc : k - 1 ∈ S <;> simp [prefixSignSumRHS, hc, hkS]
+
+/-! ## Case `k ∈ S̄`: regimes `r = m+1` and `r > m+1`, which merge into one interval -/
+
+/-- Regimes `r ≥ m+1`: the prefix is all of `T`, then the peak `k`, then the `r-m-1` largest
+elements of `D = [k-1] \ T`. Source: `2026-09-05-Q85-literal-gcd.tex`, `prop:N`, first display
+of the proof. -/
+theorem rho_take_of_gt {r : ℕ} (hT : T ⊆ range k) (hr : T.card < r) :
+    ((rho k T).take r).toFinset
+      = insert k (T ∪ (((ascList k (descentSet k T)).reverse).take (r - T.card - 1)).toFinset) := by
+  have hlen : (ascList k T).length = T.card := ascList_length hT
+  obtain ⟨j, hj⟩ : ∃ j, r - T.card = j + 1 := ⟨r - T.card - 1, by omega⟩
+  unfold rho
+  rw [List.take_append, hlen, hj, List.take_of_length_le (by omega), List.take_succ_cons]
+  rw [List.toFinset_append, List.toFinset_cons, ascList_toFinset hT]
+  simp only [Nat.add_sub_cancel]
+  ext x
+  simp only [Finset.mem_union, Finset.mem_insert]
+  tauto
+
+/-- `topBlock k S₀ = Y = (m*, k-1]` of the paper, where `m* = max([k-1] \ S₀)`.
+
+Defined as `{x ∈ [1,k-1] : [x,k-1] ⊆ S₀}` rather than through `max`, which removes the source's
+`m* := 0 if that set is empty` convention — the empty case is not special here — and keeps the
+definition decidable. Source: `2026-09-05-Q85-literal-gcd.tex`, `prop:N`, case `k ∈ \bar S`. -/
+def topBlock (k : ℕ) (S₀ : Finset ℕ) : Finset ℕ :=
+  (Icc 1 (k - 1)).filter (fun x => Icc x (k - 1) ⊆ S₀)
+
+/-- The defining property: `x ∈ Y` iff `x` lies above every element of `[k-1] \ S₀`. -/
+theorem mem_topBlock {x : ℕ} {S₀ : Finset ℕ} (hx : 1 ≤ x) :
+    x ∈ topBlock k S₀ ↔ x ≤ k - 1 ∧ ∀ y ∈ Icc 1 (k - 1) \ S₀, y < x := by
+  rw [topBlock, Finset.mem_filter, Finset.mem_Icc]
+  constructor
+  · rintro ⟨⟨-, h2⟩, h3⟩
+    refine ⟨h2, fun y hy => ?_⟩
+    rw [Finset.mem_sdiff] at hy
+    by_contra hxy
+    exact hy.2 (h3 (Finset.mem_Icc.mpr ⟨by omega, (Finset.mem_Icc.mp hy.1).2⟩))
+  · rintro ⟨h2, h3⟩
+    refine ⟨⟨hx, h2⟩, fun y hy => ?_⟩
+    have hy' := Finset.mem_Icc.mp hy
+    by_contra hyS
+    exact absurd (h3 y (Finset.mem_sdiff.mpr ⟨Finset.mem_Icc.mpr ⟨by omega, hy'.2⟩, hyS⟩))
+      (by omega)
+
+theorem topBlock_subset {S₀ : Finset ℕ} : topBlock k S₀ ⊆ S₀ := by
+  intro x hx
+  rw [topBlock, Finset.mem_filter, Finset.mem_Icc] at hx
+  exact hx.2 (Finset.mem_Icc.mpr ⟨le_rfl, hx.1.2⟩)
+
+/-- `Y = ∅` exactly when `k-1 ∉ S₀`: the dichotomy behind `prop:N`'s two branches when `k ∈ S̄`. -/
+theorem topBlock_eq_empty_iff (hk : 2 ≤ k) {S₀ : Finset ℕ} :
+    topBlock k S₀ = ∅ ↔ k - 1 ∉ S₀ := by
+  constructor
+  · intro h hmem
+    have hkY : k - 1 ∈ topBlock k S₀ := by
+      rw [topBlock, Finset.mem_filter]
+      exact ⟨Finset.mem_Icc.mpr ⟨by omega, le_rfl⟩, by
+        intro y hy; rw [Finset.mem_Icc] at hy
+        exact (le_antisymm hy.2 hy.1) ▸ hmem⟩
+    rw [h] at hkY
+    exact absurd hkY (Finset.notMem_empty _)
+  · intro h
+    rw [Finset.eq_empty_iff_forall_notMem]
+    intro x hx
+    rw [topBlock, Finset.mem_filter, Finset.mem_Icc] at hx
+    exact h (hx.2 (Finset.mem_Icc.mpr ⟨hx.1.2, le_rfl⟩))
+
+/-- The prefix condition, for `k ∈ S̄`. The source splits this into `r = m+1` (the single term
+`T = S̄₀`) and `r > m+1` (`T ⊊ S̄₀`); here the two regimes **merge into one interval**
+`S̄₀ \ Y ⊆ T ⊆ S̄₀`, with `T = S̄₀` the top element. -/
+theorem prefix_condition_mem (hk : 2 ≤ k) (hS : S ⊆ Icc 1 k) (hkS : k ∈ S)
+    (hT : T ⊆ Icc 1 (k - 1)) :
+    (((rho k T).take S.card).toFinset = S)
+      ↔ (S.erase k \ topBlock k (S.erase k) ⊆ T ∧ T ⊆ S.erase k) := by
+  have hTr : T ⊆ range k := hT.trans (Icc_one_sub_subset_range k)
+  set S₀ := S.erase k with hS₀def
+  set Y := topBlock k S₀ with hYdef
+  have hYS : Y ⊆ S₀ := topBlock_subset
+  have hS0k : S₀ ⊆ Icc 1 (k - 1) := by
+    intro x hx
+    have hx' := Finset.mem_Icc.mp (hS (Finset.mem_of_mem_erase hx))
+    exact Finset.mem_Icc.mpr ⟨hx'.1, by
+      have := Finset.ne_of_mem_erase hx; omega⟩
+  have hS0card : S₀.card = S.card - 1 := Finset.card_erase_of_mem hkS
+  have hScard : 1 ≤ S.card := Finset.card_pos.mpr ⟨k, hkS⟩
+  have hrk : S.card ≤ k := by
+    have := Finset.card_le_card hS
+    rwa [Nat.card_Icc, Nat.add_sub_cancel] at this
+  rcases lt_or_ge T.card S.card with hlt | hge
+  · -- Regimes `r ≥ m+1`: the prefix reaches the peak.
+    rw [rho_take_of_gt hTr hlt]
+    set j := S.card - T.card - 1 with hjdef
+    set D := descentSet k T with hDdef
+    have hDr : D ⊆ range k := descentSet_subset_range k T
+    have hmemD : ∀ x, x ∈ D ↔ x ∈ Icc 1 (k - 1) ∧ x ∉ T := by
+      intro x; rw [hDdef, descentSet, Finset.mem_sdiff]
+    have hDcard : D.card = (k - 1) - T.card := by
+      have h := Finset.card_sdiff_add_card_eq_card hT
+      rw [Nat.card_Icc] at h
+      rw [hDdef, descentSet]
+      omega
+    have hj : j ≤ D.card := by omega
+    set F := (((ascList k D).reverse).take j).toFinset with hFdef
+    have hFD : F ⊆ D := (take_reverse_ascList_spec hDr hj).1
+    have hkTF : k ∉ T ∪ F := by
+      intro h
+      rcases Finset.mem_union.mp h with h' | h'
+      · have := (Finset.mem_Icc.mp (hT h')).2; omega
+      · have := Finset.mem_range.mp (hDr (hFD h')); omega
+    -- `insert k (T ∪ F) = S` iff `T ∪ F = S₀`, since `k ∉ T ∪ F` and `k ∈ S`.
+    have hstep1 : insert k (T ∪ F) = S ↔ T ∪ F = S₀ := by
+      constructor
+      · intro h; rw [hS₀def, ← h, Finset.erase_insert hkTF]
+      · intro h; rw [h, hS₀def, Finset.insert_erase hkS]
+    rw [hstep1]
+    constructor
+    · -- forward
+      intro h
+      have hTS0 : T ⊆ S₀ := h ▸ Finset.subset_union_left
+      refine ⟨?_, hTS0⟩
+      -- `F = S₀ \ T`, and `F` is a final segment of `D`, so `S₀ \ T ⊆ Y`.
+      have hFeq : F = S₀ \ T := by
+        rw [← h]
+        ext x
+        simp only [Finset.mem_union, Finset.mem_sdiff]
+        constructor
+        · intro hx
+          exact ⟨Or.inr hx, fun hxT => (Finset.mem_sdiff.mp (hFD hx)).2 hxT⟩
+        · rintro ⟨hx | hx, hxT⟩
+          · exact absurd hx hxT
+          · exact hx
+      have hsep := (take_reverse_ascList_spec hDr hj).2.2
+      rw [← hFdef, hFeq] at hsep
+      have hkey : S₀ \ T ⊆ Y := by
+        intro x hx
+        have hxS0 : x ∈ S₀ := (Finset.mem_sdiff.mp hx).1
+        have hxIcc := Finset.mem_Icc.mp (hS0k hxS0)
+        rw [hYdef, mem_topBlock hxIcc.1]
+        refine ⟨hxIcc.2, fun y hy => ?_⟩
+        refine hsep x hx y ?_
+        rw [Finset.mem_sdiff] at hy ⊢
+        refine ⟨Finset.mem_sdiff.mpr ⟨hy.1, fun hyT => hy.2 (hTS0 hyT)⟩, ?_⟩
+        rw [Finset.mem_sdiff]
+        tauto
+      intro x hx
+      rw [Finset.mem_sdiff] at hx
+      by_contra hxT
+      exact hx.2 (hkey (Finset.mem_sdiff.mpr ⟨hx.1, hxT⟩))
+    · -- backward
+      rintro ⟨hAT, hTS0⟩
+      have hSTcard : (S₀ \ T).card = j := by
+        have := Finset.card_sdiff_add_card_eq_card hTS0
+        omega
+      have hSTD : S₀ \ T ⊆ D := by
+        intro x hx
+        rw [Finset.mem_sdiff] at hx
+        rw [hmemD]
+        exact ⟨hS0k hx.1, hx.2⟩
+      have hFeq : F = S₀ \ T := by
+        rw [hFdef, take_reverse_ascList_toFinset hDr hj]
+        refine ⟨hSTD, hSTcard, fun x hx y hy => ?_⟩
+        -- `D \ (S₀ \ T) = [k-1] \ S₀`, and `x ∈ S₀ \ T ⊆ Y` lies above all of it.
+        have hxY : x ∈ Y := by
+          by_contra hxY
+          rw [Finset.mem_sdiff] at hx
+          exact hx.2 (hAT (Finset.mem_sdiff.mpr ⟨hx.1, hxY⟩))
+        have hxIcc := Finset.mem_Icc.mp (hS0k ((Finset.mem_sdiff.mp hx).1))
+        rw [hYdef, mem_topBlock hxIcc.1] at hxY
+        refine hxY.2 y ?_
+        rw [Finset.mem_sdiff] at hy ⊢
+        have hy1 := (hmemD y).mp hy.1
+        refine ⟨hy1.1, fun hyS0 => hy.2 (Finset.mem_sdiff.mpr ⟨hyS0, hy1.2⟩)⟩
+      rw [hFeq, Finset.union_sdiff_of_subset hTS0]
+  · -- Regime `r ≤ m`: the prefix stays inside `T ⊆ [k-1]`, so it misses `k ∈ S̄`.
+    rw [rho_take_of_le hTr hge]
+    constructor
+    · intro h
+      have := (take_ascList_spec hTr hge).1
+      rw [h] at this
+      have := Finset.mem_Icc.mp (hT (this hkS))
+      omega
+    · rintro ⟨-, hTS0⟩
+      have := Finset.card_le_card hTS0
+      omega
+
+/-- `prop:N`, case `k ∈ S̄`, for every `k ≥ 2`. The source's two contributions — the single
+term `T = S̄₀` and the alternating sum over `T ⊊ S̄₀` — are here one application of
+`sum_interval_sign` to the interval `[S̄₀ \ Y, S̄₀]`. -/
+theorem prefixSignSum_eq_of_mem (hk : 2 ≤ k) (hS : S ⊆ Icc 1 k) (hkS : k ∈ S) :
+    prefixSignSum k S = prefixSignSumRHS k S := by
+  set S₀ := S.erase k with hS₀def
+  set Y := topBlock k S₀ with hYdef
+  have hYS : Y ⊆ S₀ := topBlock_subset
+  have hYIcc : Y ⊆ Icc 1 (k - 1) := by rw [hYdef, topBlock]; exact Finset.filter_subset _ _
+  have hS0k : S₀ ⊆ Icc 1 (k - 1) := by
+    intro x hx
+    have hx' := Finset.mem_Icc.mp (hS (Finset.mem_of_mem_erase hx))
+    exact Finset.mem_Icc.mpr ⟨hx'.1, by have := Finset.ne_of_mem_erase hx; omega⟩
+  have hdisj : Disjoint (S₀ \ Y) Y := Finset.sdiff_disjoint
+  have hAY : (S₀ \ Y) ∪ Y = S₀ := Finset.sdiff_union_of_subset hYS
+  have hstep : prefixSignSum k S
+      = ∑ T ∈ (Icc 1 (k - 1)).powerset,
+          (if S₀ \ Y ⊆ T ∧ T ⊆ (S₀ \ Y) ∪ Y then ((-1 : ℤ)) ^ T.card else 0) := by
+    refine Finset.sum_congr rfl fun T hT => ?_
+    rw [Finset.mem_powerset] at hT
+    rw [wordSign]
+    refine if_congr ?_ rfl rfl
+    rw [prefix_condition_mem hk hS hkS hT, hAY, and_comm]
+  rw [hstep, sum_interval_sign (S₀ \ Y) Y (Icc 1 (k - 1)) hdisj
+    ((Finset.sdiff_subset).trans hS0k) hYIcc]
+  -- `Y = ∅` iff `k-1 ∉ S̄`; that is exactly `prop:N`'s dichotomy in this case.
+  have hYempty : Y = ∅ ↔ k - 1 ∉ S := by
+    rw [hYdef, topBlock_eq_empty_iff hk, hS₀def, Finset.mem_erase]
+    constructor
+    · intro h hmem; exact h ⟨by omega, hmem⟩
+    · intro h hmem; exact h hmem.2
+  simp only [hYempty]
+  by_cases hc : k - 1 ∈ S
+  · rw [if_neg (by simpa using hc), mul_zero, prefixSignSumRHS,
+      if_neg (fun h => h.2 hkS), if_neg (fun h => h.2 hc)]
+  · rw [if_pos hc, mul_one, prefixSignSumRHS, if_neg (fun h => h.2 hkS), if_pos ⟨hkS, hc⟩]
+    congr 1
+    rw [Finset.sdiff_eq_self_of_disjoint (Finset.disjoint_right.mpr (fun x hx =>
+      absurd ((hYdef ▸ hYempty).mpr hc ▸ hx) (Finset.notMem_empty x))),
+      hS₀def, Finset.card_erase_of_mem hkS]
+
+/-- **`prop:N` for every `k ≥ 2`.** Source: `2026-09-05-Q85-literal-gcd.tex`, Proposition
+`prop:N`. Generalises `prefixSignSum_eq_three/_four/_five`, which were `decide` at fixed `k`. -/
+theorem prefixSignSum_eq (hk : 2 ≤ k) (hS : S ⊆ Icc 1 k) (hne : S.Nonempty) :
+    prefixSignSum k S = prefixSignSumRHS k S := by
+  by_cases hkS : k ∈ S
+  · exact prefixSignSum_eq_of_mem hk hS hkS
+  · exact prefixSignSum_eq_of_not_mem hk hS hne hkS
+
 /-!
-## What is NOT proved here
+## What this file now proves
 
-`prop:N` for general `k` is still open in Lean; `prefixSignSum_eq_three/_four/_five` remain the
-only general-`S` statements, and they are `decide`.
+`prop:N` for **every** `k ≥ 2` and every nonempty `S̄ ⊆ [k]`: `prefixSignSum_eq`. The
+`decide`-at-fixed-`k` theorems `prefixSignSum_eq_three/_four/_five` are subsumed by it and are
+kept as independent kernel-level cross-checks of the two definitions.
 
-**What this session removed.** The gap used to be stated as "one missing lemma, after which both
-cases collapse by `∑_{B ⊆ C} (-1)^|B| = 0`". That description was wrong in one respect and is now
-obsolete in the other:
+The route, matching `2026-09-05-Q85-literal-gcd.tex`, §"The prefix sign sum":
 
-* the ascending half is `take_ascList_toFinset`, proved above, sorry-free;
-* the description missed a *second* order lemma. `ρ_T` is `ascList ++ k :: (ascList D).reverse`,
-  and the case `k ∈ S̄`, regime `r > m+1` of the paper proof reads the prefix off the
-  **descending tail** — the `r-m-1` largest elements of `D`. `take_ascList_toFinset` says nothing
-  about that. Its mirror, `take_reverse_ascList_toFinset`, is proved above.
+1. **The prefix split.** `rho_take_of_le` (regime `r ≤ m`: the prefix stays inside the ascending
+   run) and `rho_take_of_gt` (regimes `r ≥ m+1`: the prefix is `T`, then the peak `k`, then the
+   top `r-m-1` of `D`). `mem_rho_take_of_gt` is the cheap discriminator between them — past the
+   peak the prefix contains `k`.
+2. **The two order lemmas**, proved 2026-09-06: `take_ascList_toFinset` and its mirror
+   `take_reverse_ascList_toFinset`.
+3. **One reindexing, not two.** `sum_interval_sign` evaluates `∑_{A ⊆ T ⊆ A ⊔ Y} (-1)^|T|` as
+   `(-1)^|A| · [Y = ∅]`, by `Finset.sum_nbij'` along `T ↦ T \ A` together with
+   `Finset.sum_powerset_neg_one_pow_card`. Both cases of `prop:N` are instances: case `k ∉ S̄`
+   with `A = S̄`, `Y = (max S̄, k-1]`; case `k ∈ S̄` with `A = S̄₀ \ Y`, `Y = topBlock`.
 
-So the whole order-theoretic content of `prop:N` is now formalised. What is left is bookkeeping,
-and it is genuinely of a different kind:
+**Where this departs from the paper, and why it is not new mathematics.** The source splits the
+case `k ∈ S̄` into `r = m+1` (one term, `T = S̄₀`) and `r > m+1` (an alternating sum over
+`T ⊊ S̄₀`), then adds the two contributions. `prefix_condition_mem` shows the admissible `T` are
+exactly the interval `S̄₀ \ Y ⊆ T ⊆ S̄₀`, of which `T = S̄₀` is the top element — so the two
+regimes are one interval and the addition is not needed. Both computations agree; the Lean proof
+takes the shorter of them.
 
-1. **Splitting the prefix across the append.** `((rho k T).take r).toFinset` in the three regimes
-   `r ≤ m`, `r = m+1`, `r > m+1`, via `List.take_append` / `List.take_append_eq_append_take`.
-   The two lemmas above then identify each piece. No new mathematics.
-2. **Two sum reindexings.** Case `k ∉ S̄` reindexes the `T`-sum along `T = S̄ ⊔ B`,
-   `B ⊆ (max S̄, k-1]`; case `k ∈ S̄` along `T = (S̄₀ \ Y) ∪ Y'`, `Y' ⊊ Y`. These are
-   `Finset.sum_nbij'`-shaped and are where the remaining work actually is.
-3. **The alternating sum.** `Finset.sum_powerset_neg_one_pow_card_of_nonempty`
-   (`Mathlib/Data/Nat/Choose/Sum.lean`) — already in Mathlib, no work.
+Likewise `topBlock` is `{x ∈ [1,k-1] : [x,k-1] ⊆ S̄₀}` rather than the source's `(m*, k-1]` with
+`m* := max([k-1] \ S̄₀)` and the convention `m* := 0` when that set is empty. The two sets are
+equal; the filter form has no empty-set special case and, unlike `max'`, needs no nonemptiness
+hypothesis.
 
-Registry: `Q85-prefix-sign-sum-lean-general-gap`. Session note
-`proofs/2026-09-06-c2-lean-prefix-initial-segments.md`.
+Registry: `Q85-prefix-sign-sum-lean-general-gap`, `Q85-prefix-sign-sum-lean-initial-segments`.
+Session note `proofs/2026-09-07-lean-prefix-sign-sum-general-k.md`.
 -/
 
 end TworowD4Kernel
