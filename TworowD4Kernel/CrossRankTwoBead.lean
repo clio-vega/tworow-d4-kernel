@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Clio
 -/
 import TworowD4Kernel.CrossRankOneBead
+import Mathlib.Algebra.MonoidAlgebra.Basic
 
 /-!
 # The two-bead sector of the two-parameter commutator `[R_e(t), R_f(s)]`
@@ -335,5 +336,271 @@ theorem twoBeadSector_commutator_eq_zero_of_mul_eq_one {R : Type*} [CommRing R] 
   exact twoBead_contribution_of_mul_eq_one hts he hf hx hxe hyM hyfM h2b.1 h2b.2.2.2
 
 end Sector
+
+section TwoAssignmentSum
+
+/-!
+## The two-assignment sum, and the exact locus where it vanishes
+
+This section formalises the **corrected** Corollary 4.2(iv) of
+`proofs/2026-09-07-c2-Q96-order-over-sublattice.tex`.  As printed, (iv) asserts that
+`[R_e(t), R_e(s)]` has a nonzero two-bead part whenever `t ≠ s` and `t s ≠ 1`.  That is
+false for `e ∈ {1, 2}`; the self-review of 8 September 2026 (`clio-vega/rick-review@8223c88`,
+finding F2) traced the defect to the closing clause of the printed proof, "this is not
+identically zero", which is asserted rather than proved.  The corrected statement carries
+the hypothesis `e ≥ 3`.
+
+Two things are separated here, because the paper conflated them.
+
+* `twoAssign_eq_zero_iff` is a **pure identity of Laurent polynomials** in three integer
+  parameters `P, Q, k`.  It is an *iff*: the sum vanishes exactly on `k = 0 ∨ Q = P - k`.
+  The forward direction is the content — it says four monomials in two variables fail to
+  cancel — and it is where the printed corollary went wrong.
+* `twoAssign_eq_zero_of_le_two` is the **abacus input**: for `e = f ≤ 2` every legal
+  assignment lands on that vanishing locus, so the sector is identically zero.
+  `exists_twoAssign_ne_zero_three` exhibits a legal assignment at `e = f = 3` that does not.
+
+### The ring
+
+Exponents in the two-assignment sum are genuine integers: `P - k` and `Q + k` are unbounded
+below as `k` ranges over the crossing indices.  So the ambient ring is the two-variable
+*Laurent* ring `ℤ[t^{±1}, s^{±1}]`, realised as the group algebra of `ℤ × ℤ`.  Monomials
+`t^a s^b` are `mono a b`, and `mono_mul` / `mono_zero` say that `(a, b) ↦ mono a b` is a
+homomorphism from `(ℤ², +)`, which is what pins `mono a b` down as `t^a s^b`.
+
+### A convention warning that is deliberately *not* imported
+
+`ribbonHeight` is used below purely as the window statistic `#{c ∈ M : b < c < b + e}` that
+`TworowD4Kernel.AbacusRibbon` defines it to be.  Rick (Day 180,
+`grandpa-rick/rick-research@616ea6e` §3) identifies it with the leg length of the `e`-ribbon,
+standard since Littlewood's `e`-quotient theorem (James–Kerber §2.7), with range
+`{0, …, e-1}`.  That identification is *not used*: the range bound `ribbonHeight_le_sub_one`
+is proved from the definition, and an off-by-one in the ribbon-height convention would land
+squarely in the range `[0, e-1]` that the `e ≤ 2` collapse is built on.  Likewise the `e = 2`
+collapse is derived from the window statistic directly, not from Rick's parity argument.
+-/
+
+/-- The two-variable Laurent ring `ℤ[t^{±1}, s^{±1}]`, as the group algebra of `ℤ × ℤ`. -/
+abbrev LaurentZ2 := AddMonoidAlgebra ℤ (ℤ × ℤ)
+
+/-- The Laurent monomial `t^a s^b`, for `a b : ℤ`. -/
+noncomputable def mono (a b : ℤ) : LaurentZ2 := AddMonoidAlgebra.single (a, b) 1
+
+/-- `t^a s^b · t^c s^d = t^{a+c} s^{b+d}`. With `mono_zero` this says `mono` is a monoid
+homomorphism from `(ℤ², +)`, which is what makes `mono a b` deserve the name `t^a s^b`. -/
+@[simp] theorem mono_mul (a b c d : ℤ) : mono a b * mono c d = mono (a + c) (b + d) := by
+  unfold mono
+  rw [AddMonoidAlgebra.single_mul_single]
+  norm_num [Prod.mk_add_mk]
+
+/-- `t^0 s^0 = 1`. -/
+@[simp] theorem mono_zero : mono 0 0 = 1 := rfl
+
+/-- Every monomial is a unit — this is the point of working in the Laurent ring rather than
+in `MvPolynomial (Fin 2) ℤ`, where `mono (P - k) Q` need not exist. -/
+theorem mono_isUnit (a b : ℤ) : IsUnit (mono a b) :=
+  ⟨⟨mono a b, mono (-a) (-b), by rw [mono_mul]; simp, by rw [mono_mul]; simp⟩, rfl⟩
+
+/-- **The contribution of one legal assignment** (paper Thm. 4.1(2)): with the `e`-move
+first the monomial is `t^P s^{Q+k}`, with the `f`-move first it is `t^{P-k} s^Q`, and the
+net contribution to the commutator is their difference. -/
+noncomputable def assignContrib (P Q k : ℤ) : LaurentZ2 :=
+  mono (P - k) Q - mono P (Q + k)
+
+/-- The paper's factorised form `t^{P-k} s^Q (1 - (ts)^k)`.  This is the factor that
+Corollary 4.2(iii) kills on `ts = 1`; note it is *not* enough for (iv), because the sum of
+two assignments can vanish without either factor doing so. -/
+theorem assignContrib_eq_mul (P Q k : ℤ) :
+    assignContrib P Q k = mono (P - k) Q * (1 - mono k k) := by
+  unfold assignContrib
+  rw [mul_sub, mul_one, mono_mul]
+  ring_nf
+
+/-- **The two-assignment sum** of Corollary 4.2(iv):
+`t^{P-k} s^Q - t^P s^{Q+k} + t^{Q+k} s^P - t^Q s^{P-k}`.
+At `e = f` both assignments `(b, c)` and `(c, b)` are legal; the second has heights `Q, P`
+and crossing index `-k` (`crossIndex_swap`), which is `twoAssign_eq_add_swap` below. -/
+noncomputable def twoAssign (P Q k : ℤ) : LaurentZ2 :=
+  mono (P - k) Q - mono P (Q + k) + mono (Q + k) P - mono Q (P - k)
+
+/-- The two-assignment sum really is the sum of the two assignments' contributions, the
+second obtained by `b ↔ c` — heights swapped, crossing index negated. -/
+theorem twoAssign_eq_add_swap (P Q k : ℤ) :
+    twoAssign P Q k = assignContrib P Q k + assignContrib Q P (-k) := by
+  unfold twoAssign assignContrib
+  ring_nf
+
+/-- Unfolding to the underlying `Finsupp`, so that coefficients can be read off. -/
+theorem twoAssign_eq_finsupp (P Q k : ℤ) : twoAssign P Q k =
+    (Finsupp.single (P - k, Q) 1 - Finsupp.single (P, Q + k) 1
+      + Finsupp.single (Q + k, P) 1 - Finsupp.single (Q, P - k) 1 : (ℤ × ℤ) →₀ ℤ) := rfl
+
+/-- The coefficient of `t^c s^d` in the two-assignment sum. -/
+theorem twoAssign_apply (P Q k c d : ℤ) :
+    (twoAssign P Q k : (ℤ × ℤ) →₀ ℤ) (c, d)
+      = (if P - k = c ∧ Q = d then 1 else 0) - (if P = c ∧ Q + k = d then 1 else 0)
+      + (if Q + k = c ∧ P = d then 1 else 0) - (if Q = c ∧ P - k = d then 1 else 0) := by
+  rw [twoAssign_eq_finsupp]
+  simp only [Finsupp.sub_apply, Finsupp.add_apply, Finsupp.single_apply, Prod.ext_iff]
+
+/-- **The corrected Corollary 4.2(iv), core identity.**  The two-assignment sum vanishes
+identically **iff** `k = 0` or `Q = P - k`.
+
+The reverse direction is the pair of substitutions the paper checks implicitly: at `k = 0`
+terms 1–2 and 3–4 cancel, and at `Q = P - k` term 1 equals term 4 and term 2 equals term 3.
+
+The forward direction is what the printed proof asserts without argument.  It is proved by
+reading off a single coefficient: the monomial `t^{P-k} s^Q` occurs with coefficient `1`.
+The three ways another term could cancel it are all excluded — `t^P s^{Q+k}` needs `k = 0`,
+`t^Q s^{P-k}` needs `Q = P - k`, and `t^{Q+k} s^P` needs `P = Q` *and* `Q + k = P - k`,
+hence `2k = 0`, hence `k = 0` again. -/
+theorem twoAssign_eq_zero_iff (P Q k : ℤ) :
+    twoAssign P Q k = 0 ↔ k = 0 ∨ Q = P - k := by
+  constructor
+  · intro h
+    by_contra hc
+    simp only [not_or] at hc
+    obtain ⟨hk, hQ⟩ := hc
+    have hco := twoAssign_apply P Q k (P - k) Q
+    rw [h] at hco
+    rw [show ((0 : LaurentZ2) : (ℤ × ℤ) →₀ ℤ) (P - k, Q) = 0 from rfl] at hco
+    split_ifs at hco <;> omega
+  · rintro (rfl | rfl) <;> unfold twoAssign
+    · simp only [sub_zero, add_zero]
+      ring
+    · simp only [sub_add_cancel]
+      ring
+
+end TwoAssignmentSum
+
+section EDependence
+
+open Finset
+
+/-- The window `(b, b+1)` of integers is empty, so a `1`-ribbon has height `0`. -/
+theorem ribbonHeight_one (M : Finset ℤ) (b : ℤ) : ribbonHeight 1 M b = 0 := by
+  classical
+  unfold ribbonHeight
+  rw [Finset.card_eq_zero, Finset.filter_eq_empty_iff]
+  intro z _
+  push_cast
+  omega
+
+/-- The window `(b, b+2)` contains the single integer `b+1`, so a `2`-ribbon has height
+`1` or `0` according as `b+1` is a bead. -/
+theorem ribbonHeight_two (M : Finset ℤ) (b : ℤ) :
+    ribbonHeight 2 M b = if b + 1 ∈ M then 1 else 0 := by
+  classical
+  unfold ribbonHeight
+  by_cases hb : b + 1 ∈ M
+  · rw [if_pos hb, show M.filter (fun x => b < x ∧ x < b + ((2 : ℕ) : ℤ)) = {b + 1} from ?_,
+      Finset.card_singleton]
+    ext z
+    simp only [Finset.mem_filter, Finset.mem_singleton]
+    constructor
+    · rintro ⟨-, h1, h2⟩; push_cast at h2; omega
+    · rintro rfl; exact ⟨hb, by push_cast; omega⟩
+  · rw [if_neg hb, Finset.card_eq_zero, Finset.filter_eq_empty_iff]
+    intro z hz ⟨h1, h2⟩
+    push_cast at h2
+    exact hb (by rwa [show b + 1 = z by omega])
+
+/-- The crossing index takes only the values `-1, 0, 1`: it is the change in the occupancy
+of one window caused by moving one bead. -/
+theorem crossIndex_mem (e f : ℕ) (x y : ℤ) :
+    crossIndex e f x y = -1 ∨ crossIndex e f x y = 0 ∨ crossIndex e f x y = 1 := by
+  unfold crossIndex
+  split_ifs <;> omega
+
+/-- **The `e = f ≤ 2` collapse.**  For a legal two-bead assignment at `e = f ≤ 2` the
+triple `(P, Q, k)` always lands on the vanishing locus of `twoAssign_eq_zero_iff`, so the
+two-bead part of `[R_e(t), R_e(s)]` is identically zero — for *all* `t, s`, not merely on
+`s = t` and `ts = 1`.  This is the case the printed Corollary 4.2(iv) excludes wrongly.
+
+The two mechanisms are different and are kept apart:
+
+* at `e = 1` the window `(c, c+1)` is empty, so `k = 0` outright;
+* at `e = 2` a nonzero `k` *pins the geometry*: `k = 1` forces `b = c - 1` and `k = -1`
+  forces `b = c + 1`, and in each case legality then evaluates both single-cell windows,
+  giving `Q = P - k` exactly.
+
+Note that legality (`hx`, `hxe`, `hy`, `hye`) is genuinely used in the `e = 2` branch: it is
+what turns the two window counts into the constants `1` and `0`.  The distinctness
+hypothesis `x ≠ y` of `TwoBead` is *not* needed and is deliberately absent: the two windows
+`k = 1` and `k = -1` are already mutually exclusive (one forces `x < y`, the other `y < x`),
+so the case split is exhaustive without it. -/
+theorem twoAssign_eq_zero_of_le_two {e : ℕ} (he : 0 < e) (he2 : e ≤ 2) (M : Finset ℤ)
+    (x y : ℤ) (hx : x ∈ M) (hxe : x + (e : ℤ) ∉ M) (hy : y ∈ M) (hye : y + (e : ℤ) ∉ M) :
+    twoAssign (ribbonHeight e M x : ℤ) (ribbonHeight e M y : ℤ) (crossIndex e e x y) = 0 := by
+  rw [twoAssign_eq_zero_iff]
+  obtain rfl | rfl : e = 1 ∨ e = 2 := by omega
+  · -- `e = 1`: the open window `(y, y+1)` is empty, so both indicators vanish.
+    left
+    unfold crossIndex
+    push_cast
+    split_ifs <;> omega
+  · -- `e = 2`: a nonzero `k` pins `x` next to `y`, and legality evaluates the windows.
+    have hk : crossIndex 2 2 x y
+        = (if y < x + 2 ∧ x + 2 < y + 2 then 1 else 0)
+          - (if y < x ∧ x < y + 2 then 1 else 0) := by
+      unfold crossIndex; push_cast; rfl
+    push_cast at hxe hye
+    by_cases hA : y < x + 2 ∧ x + 2 < y + 2
+    · -- `k = 1`, which forces `x = y - 1`; then `P = 1[y ∈ M] = 1` and `Q = 1[x+2 ∈ M] = 0`.
+      have hB : ¬(y < x ∧ x < y + 2) := by omega
+      right
+      rw [hk, if_pos hA, if_neg hB, ribbonHeight_two, ribbonHeight_two,
+        if_neg (show y + 1 ∉ M by rw [show y + 1 = x + 2 by omega]; exact hxe),
+        if_pos (show x + 1 ∈ M by rw [show x + 1 = y by omega]; exact hy)]
+      norm_num
+    · by_cases hB : y < x ∧ x < y + 2
+      · -- `k = -1`, which forces `x = y + 1`; then `P = 1[y+2 ∈ M] = 0` and `Q = 1[x ∈ M] = 1`.
+        right
+        rw [hk, if_neg hA, if_pos hB, ribbonHeight_two, ribbonHeight_two,
+          if_pos (show y + 1 ∈ M by rw [show y + 1 = x by omega]; exact hx),
+          if_neg (show x + 1 ∉ M by rw [show x + 1 = y + 2 by omega]; exact hye)]
+        norm_num
+      · -- neither window changes: `k = 0`.
+        left
+        rw [hk, if_neg hA, if_neg hB]
+        norm_num
+
+/-- **An `e = f = 3` witness.**  `M = {6, 7, 8}`, `b = 6`, `c = 8`: a legal two-bead
+assignment with `P = 2`, `Q = 0`, `k = 1`, so `Q ≠ P - k` and the two-assignment sum is
+`t s^2 - t^2 s + t - s`, the paper's `(t - s)(1 - st)` of Remark 4.3.  Together with
+`twoAssign_eq_zero_of_le_two` this makes `e ≥ 3` exactly the right hypothesis. -/
+theorem exists_twoAssign_ne_zero_three :
+    ∃ (M : Finset ℤ) (x y : ℤ), x ∈ M ∧ x + ((3 : ℕ) : ℤ) ∉ M ∧ y ∈ M
+      ∧ y + ((3 : ℕ) : ℤ) ∉ M ∧ TwoBead 3 3 x y
+      ∧ twoAssign (ribbonHeight 3 M x : ℤ) (ribbonHeight 3 M y : ℤ)
+          (crossIndex 3 3 x y) ≠ 0 := by
+  classical
+  refine ⟨Finset.Icc (6 : ℤ) 8, 6, 8, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · norm_num
+  · norm_num [Finset.mem_Icc]
+  · norm_num
+  · norm_num [Finset.mem_Icc]
+  · norm_num [TwoBead]
+  · have hP : ribbonHeight 3 (Finset.Icc (6 : ℤ) 8) 6 = 2 := by
+      unfold ribbonHeight
+      rw [show (Finset.Icc (6 : ℤ) 8).filter (fun z => 6 < z ∧ z < 6 + ((3 : ℕ) : ℤ))
+          = {7, 8} from ?_]
+      · decide
+      · ext z
+        simp only [Finset.mem_filter, Finset.mem_Icc, Finset.mem_insert, Finset.mem_singleton]
+        push_cast
+        omega
+    have hQ : ribbonHeight 3 (Finset.Icc (6 : ℤ) 8) 8 = 0 := by
+      unfold ribbonHeight
+      rw [Finset.card_eq_zero, Finset.filter_eq_empty_iff]
+      intro z hz
+      simp only [Finset.mem_Icc] at hz
+      push_cast
+      omega
+    have hk : crossIndex 3 3 (6 : ℤ) 8 = 1 := by unfold crossIndex; norm_num
+    rw [hP, hQ, hk, Ne, twoAssign_eq_zero_iff]
+    norm_num
+
+end EDependence
 
 end TworowD4Kernel
