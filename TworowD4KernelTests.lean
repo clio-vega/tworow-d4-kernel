@@ -277,3 +277,99 @@ private def M₂' : Finset ℤ := addRibbon (1 + 2) M₂ 0
 #guard decide (matrixElem 2 1 M₂ M₂' (3 : ℤ) = 4)
 
 end CrossRankOneBead
+
+/-! ## The two-bead sector of `[R_e(t), R_f(s)]` (2026-09-08)
+
+Kernel cross-checks of `TworowD4Kernel.twoBeadSector_commutator_eq_zero_of_mul_eq_one` and the
+lemmas under it. The instances are chosen so the population *moves*: `k` takes all three of
+its values `+1, 0, -1`, the `e = f` instance carries **two** legal assignments with opposite
+`k`, and the `ts = 1` vanishing is checked against a neighbouring `ts ≠ 1` instance that does
+**not** vanish. A vanishing check whose neighbours also vanish is a kernel, not evidence. -/
+section CrossRankTwoBead
+
+/-! Instance 1, `k = +1`. `e = 2`, `f = 3`, `M = {0,1,2}`, `M' = {0,3,5}`; the single legal
+assignment is `(x,y) = (1,2)`, with `P = 1`, `Q = 0`, `P' = 0`, `Q' = 1`. -/
+private def N₁ : Finset ℤ := {0, 1, 2}
+private def N₁' : Finset ℤ := {0, 3, 5}
+
+#guard decide (twoBeadRoutes 2 3 N₁ N₁' = ({(1, 2)} : Finset (ℤ × ℤ)))
+#guard decide (twoBeadRoutes 3 2 N₁ N₁' = ({(2, 1)} : Finset (ℤ × ℤ)))
+#guard decide (crossIndex 2 3 1 2 = 1)
+-- Shadows `crossIndex_swap`: `k' = -k`.
+#guard decide (crossIndex 3 2 2 1 = -1)
+-- Shadows `twoBead_height_sum`: `P' + Q' = P + Q`, here `0 + 1 = 1 + 0`.
+#guard decide (ribbonHeight 2 (addRibbon 3 N₁ 2) 1 + ribbonHeight 3 (addRibbon 2 N₁ 1) 2
+  = ribbonHeight 2 N₁ 1 + ribbonHeight 3 N₁ 2)
+-- The commutator two-bead part is `1 - st`; at `t = 3`, `s = 5` that is `-14`.
+#guard decide (twoBeadSector 3 2 N₁ N₁' (5 : ℤ) 3 - twoBeadSector 2 3 N₁ N₁' (3 : ℤ) 5 = -14)
+
+/-! Instance 2, `k = -1`, so the factor `1 - (ts)^k` is nontrivial in the *other* direction.
+`e = 2`, `f = 3`, `M = {0,1,2}`, `M' = {1,3,4}`, assignment `(2,0)`, `P = 0`, `Q = 2`. -/
+private def N₂' : Finset ℤ := {1, 3, 4}
+
+#guard decide (twoBeadRoutes 2 3 N₁ N₂' = ({(2, 0)} : Finset (ℤ × ℤ)))
+#guard decide (crossIndex 2 3 2 0 = -1)
+#guard decide (crossIndex 3 2 0 2 = 1)
+#guard decide (ribbonHeight 2 (addRibbon 3 N₁ 0) 2 + ribbonHeight 3 (addRibbon 2 N₁ 2) 0
+  = ribbonHeight 2 N₁ 2 + ribbonHeight 3 N₁ 0)
+-- The commutator two-bead part is `s²t - s = s(st - 1)`; at `t = 3`, `s = 5` that is `70`.
+#guard decide (twoBeadSector 3 2 N₁ N₂' (5 : ℤ) 3 - twoBeadSector 2 3 N₁ N₂' (3 : ℤ) 5 = 70)
+
+/-! Instance 3, `k = 0`. `e = 1`, `f = 3`, `M = {0,1,2}`, `M' = {0,3,4}`, assignment `(2,1)`.
+**Labelled as a kernel:** at `k = 0` the two orderings contribute the same monomial for
+*every* `t, s`, so this instance is identically zero and cannot distinguish `ts = 1` from
+anything else. It is here to pin the third value of `k`, not as evidence for Cor. 4.2(iii). -/
+private def N₃' : Finset ℤ := {0, 3, 4}
+
+#guard decide (twoBeadRoutes 1 3 N₁ N₃' = ({(2, 1)} : Finset (ℤ × ℤ)))
+#guard decide (crossIndex 1 3 2 1 = 0)
+#guard decide (twoBeadSector 3 1 N₁ N₃' (5 : ℤ) 3 - twoBeadSector 1 3 N₁ N₃' (3 : ℤ) 5 = 0)
+-- ... and it is zero at a generic point too, which is what makes it a kernel.
+#guard decide (twoBeadSector 3 1 N₁ N₃' (7 : ℤ) 2 - twoBeadSector 1 3 N₁ N₃' (2 : ℤ) 7 = 0)
+
+/-! Instance 4 — **the correction**. `e = f = 3`, `M = {0,1,2}`, `M' = {1,3,5}`. There are
+**two** legal assignments, `(0,2)` with `k = +1` and `(2,0)` with `k = -1`, and the sector is
+`s²t - st² - s + t = (t-s)(1-st)`: nonzero off the two loci, zero at `s = t`, zero at
+`ts = 1`. This is exactly the entry that `\cite[Thm.~2.3(2)]{Clio0907}` declared to be `0`;
+the one-parameter specialisation `s = t` is why the error survived. -/
+private def N₄' : Finset ℤ := {1, 3, 5}
+
+#guard decide (twoBeadRoutes 3 3 N₁ N₄' = ({(0, 2), (2, 0)} : Finset (ℤ × ℤ)))
+#guard decide (crossIndex 3 3 0 2 = 1)
+#guard decide (crossIndex 3 3 2 0 = -1)
+-- Nonzero at `t = 3`, `s = 5`: `75 - 45 - 5 + 3 = 28`. THE SECTOR IS NOT EMPTY AT `e = f`.
+#guard decide (twoBeadSector 3 3 N₁ N₄' (5 : ℤ) 3 - twoBeadSector 3 3 N₁ N₄' (3 : ℤ) 5 = 28)
+-- Zero at `s = t = 3`: the one-parameter cancellation the old clause mistook for emptiness.
+#guard decide (twoBeadSector 3 3 N₁ N₄' (3 : ℤ) 3 - twoBeadSector 3 3 N₁ N₄' (3 : ℤ) 3 = 0)
+
+/-! ## `ts = 1` with `t ≠ s`, against a moving neighbour
+
+Over `ℚ` with `t = 2`, `s = 1/2`: `ts = 1` and `t ≠ s`, so this is not the degenerate
+`t = s = -1` point. Each vanishing is paired with the *same instance* at `s = 1` (`ts = 2`),
+where it does **not** vanish. -/
+#guard decide (twoBeadSector 3 2 N₁ N₁' ((1 : ℚ)/2) 2 - twoBeadSector 2 3 N₁ N₁' (2 : ℚ) (1/2) = 0)
+#guard decide (twoBeadSector 3 2 N₁ N₁' (1 : ℚ) 2 - twoBeadSector 2 3 N₁ N₁' (2 : ℚ) 1 ≠ 0)
+
+#guard decide (twoBeadSector 3 2 N₁ N₂' ((1 : ℚ)/2) 2 - twoBeadSector 2 3 N₁ N₂' (2 : ℚ) (1/2) = 0)
+#guard decide (twoBeadSector 3 2 N₁ N₂' (1 : ℚ) 2 - twoBeadSector 2 3 N₁ N₂' (2 : ℚ) 1 ≠ 0)
+
+#guard decide (twoBeadSector 3 3 N₁ N₄' ((1 : ℚ)/2) 2 - twoBeadSector 3 3 N₁ N₄' (2 : ℚ) (1/2) = 0)
+#guard decide (twoBeadSector 3 3 N₁ N₄' (1 : ℚ) 2 - twoBeadSector 3 3 N₁ N₄' (2 : ℚ) 1 ≠ 0)
+
+/-! ## Negative controls for `crossIndex_swap`
+
+The lemma `k' = -k` needs `x ≠ y` and `x + e ≠ y + f`, and the paper states exactly those
+two. Each is shown load-bearing by an instance where dropping it breaks the conclusion. -/
+
+-- Drop `x ≠ y`: at `x = y = 0`, `e = 1`, `f = 2` one gets `k = 1` but `k' = 0 ≠ -1`.
+#guard decide (crossIndex 1 2 0 0 = 1)
+#guard decide (crossIndex 2 1 0 0 = 0)
+#guard decide (crossIndex 2 1 0 0 ≠ -crossIndex 1 2 0 0)
+
+-- Drop `x + e ≠ y + f`: at `x = 1`, `y = 0`, `e = 1`, `f = 2` both land on `2`;
+-- `k = -1` but `k' = 0 ≠ 1`.
+#guard decide (crossIndex 1 2 1 0 = -1)
+#guard decide (crossIndex 2 1 0 1 = 0)
+#guard decide (crossIndex 2 1 0 1 ≠ -crossIndex 1 2 1 0)
+
+end CrossRankTwoBead

@@ -8,6 +8,7 @@ import TworowD4Kernel.ArithKernel
 import TworowD4Kernel.B0modKernel
 import TworowD4Kernel.CompensationLemma
 import TworowD4Kernel.CrossRankOneBead
+import TworowD4Kernel.CrossRankTwoBead
 import TworowD4Kernel.Fp2Irreducible
 import TworowD4Kernel.GaussianUnitSum
 import TworowD4Kernel.PadicNoRoot
