@@ -17,6 +17,7 @@ import TworowD4Kernel.PrefixSignSum
 import TworowD4Kernel.QuantumInteger
 import TworowD4Kernel.LemmaF
 import TworowD4Kernel.Maya
+import TworowD4Kernel.SelfReciprocal
 import TworowD4Kernel.SignedCount
 import TworowD4Kernel.SubsetIdentityGeneralC
 import TworowD4Kernel.WindowLemma
