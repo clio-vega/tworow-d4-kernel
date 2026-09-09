@@ -373,3 +373,59 @@ two. Each is shown load-bearing by an instance where dropping it breaks the conc
 #guard decide (crossIndex 2 1 0 1 ≠ -crossIndex 1 2 1 0)
 
 end CrossRankTwoBead
+
+
+section RibbonTranspose
+
+/-! ## `hgt(R) + hgt(Rᵀ) = e - 1`
+
+Each `#guard` shadows a `by decide` witness in `TworowD4Kernel.RibbonTranspose` and evaluates
+the *same* decidable proposition by kernel reduction, so a wrong expected value fails
+`lake test`. -/
+
+-- Shadows `ribbonWindow_four`: the open window at `e = 4, b = 0` is `{1,2,3}`, three sites.
+#guard decide (ribbonWindow 4 (0 : ℤ) = ({1, 2, 3} : Finset ℤ))
+#guard decide ((ribbonWindow 4 (0 : ℤ)).card = 3)
+
+-- Shadows `ribbonHeight_four_nonvacuous` and `ribbonHeight_transposeConfig_four`: the window
+-- is genuinely occupied and the two heights DIFFER, so this is not the fixed point `h + h`.
+#guard decide (ribbonHeight 4 ({0, 1, 2} : Finset ℤ) 0 = 2)
+#guard decide (transposeConfig 4 ({0, 1, 2} : Finset ℤ) 0 = ({1, 0} : Finset ℤ))
+#guard decide (ribbonHeight 4 (transposeConfig 4 ({0, 1, 2} : Finset ℤ) 0) 0 = 1)
+
+-- Shadows `ribbonHeight_add_four`: the identity itself, `2 + 1 = 3 = e - 1`.
+#guard decide (ribbonHeight 4 ({0, 1, 2} : Finset ℤ) 0
+  + ribbonHeight 4 (transposeConfig 4 ({0, 1, 2} : Finset ℤ) 0) 0 = 3)
+
+-- Shadows `ribbonHeight_four_extreme`: both ends of the split are realised.
+#guard decide (ribbonHeight 4 ({0} : Finset ℤ) 0 = 0)
+#guard decide (ribbonHeight 4 (transposeConfig 4 ({0} : Finset ℤ) 0) 0 = 3)
+
+-- Shadows `ribbonHeight_four_sideConditions` / `transposeConfig_four_sideConditions`: both
+-- configurations are legal ribbons (`b ∈ M`, `b + e ∉ M`), not arbitrary bead sets.
+#guard decide ((0 : ℤ) ∈ ({0, 1, 2} : Finset ℤ) ∧ (4 : ℤ) ∉ ({0, 1, 2} : Finset ℤ))
+#guard decide ((0 : ℤ) ∈ transposeConfig 4 ({0, 1, 2} : Finset ℤ) 0
+  ∧ (4 : ℤ) ∉ transposeConfig 4 ({0, 1, 2} : Finset ℤ) 0)
+
+/-! ### Negative controls -/
+
+-- Shadows `ribbonHeight_reflect_not_transpose`: reflection ALONE preserves the height
+-- (`card_image_ribbonReflect_inter`), so the complement is the load-bearing half.
+#guard decide (ribbonHeight 4 (({0, 1, 2} : Finset ℤ).image (ribbonReflect 4 0)) 0 = 2)
+#guard decide (ribbonHeight 4 ({0, 1, 2} : Finset ℤ) 0
+  + ribbonHeight 4 (({0, 1, 2} : Finset ℤ).image (ribbonReflect 4 0)) 0 ≠ 3)
+
+-- Shadows `card_insert_ribbonWindow_four`: the OPEN window (3 sites) and the HALF-OPEN one
+-- (4 sites) are distinguishable, differing by exactly the left endpoint, so the convention in
+-- force is pinned, not assumed. Stated via `insert` rather than `Finset.Ico` because
+-- `Finset.Ico` on `ℤ` is NONCOMPUTABLE here -- `#guard` compiles its argument, so a `#guard`
+-- on `ribbonWindow_ne_Ico` fails with `dependsOnNoncomputable` even though the library's
+-- `decide` kernel-reduces it. `Finset.Ioo` and `insert` are unaffected.
+#guard decide ((0 : ℤ) ∉ ribbonWindow 4 (0 : ℤ))
+#guard decide ((insert (0 : ℤ) (ribbonWindow 4 (0 : ℤ))).card = 4)
+
+-- Shadows `ribbonHeight_lt_sub_one_witness`: the bound `e - 1` is not saturated by every
+-- configuration, so `ribbonHeight_le_sub_one_of_transpose` is not vacuous-by-saturation.
+#guard decide (ribbonHeight 4 ({0, 1} : Finset ℤ) 0 < 3)
+
+end RibbonTranspose

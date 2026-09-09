@@ -15,6 +15,7 @@ import TworowD4Kernel.PadicNoRoot
 import TworowD4Kernel.PhiNonvanishing
 import TworowD4Kernel.PrefixSignSum
 import TworowD4Kernel.QuantumInteger
+import TworowD4Kernel.RibbonTranspose
 import TworowD4Kernel.LemmaF
 import TworowD4Kernel.Maya
 import TworowD4Kernel.SelfReciprocal
