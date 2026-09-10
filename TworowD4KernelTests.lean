@@ -429,3 +429,60 @@ the *same* decidable proposition by kernel reduction, so a wrong expected value 
 #guard decide (ribbonHeight 4 ({0, 1} : Finset ℤ) 0 < 3)
 
 end RibbonTranspose
+
+section AdamsDilationTests
+
+open TworowD4Kernel.AdamsDilation
+
+/-! ## `AdamsDilation`: dilation multiplies ribbon SIZE and fixes ribbon HEIGHT
+
+Shadows the witnesses of `TworowD4Kernel.AdamsDilation`. Every value below is the one a
+`by decide` theorem in that module asserts, re-evaluated by the compiler. -/
+
+-- Shadows `image_dilate_three_two`: the dilated bead set of the primary witness.
+#guard decide ((({0, 1, 2} : Finset ℤ).image (dilate 2 0)) = ({0, 2, 4} : Finset ℤ))
+
+-- Shadows `witness_upstairs` / `witness_downstairs`: the SAME height, 2, upstairs at size 3
+-- and downstairs at size 6. This is the load-bearing pair -- size scales, height does not.
+#guard decide (ribbonHeight 3 ({0, 1, 2} : Finset ℤ) 0 = 2)
+#guard decide (ribbonHeight 6 (({0, 1, 2} : Finset ℤ).image (dilate 2 0)) (dilate 2 0 0) = 2)
+
+-- ... and both are legal ribbon moves (`b ∈ M`, `b + size ∉ M`), not arbitrary bead sets.
+#guard decide ((0 : ℤ) ∈ ({0, 1, 2} : Finset ℤ) ∧ (3 : ℤ) ∉ ({0, 1, 2} : Finset ℤ))
+#guard decide (dilate 2 0 0 ∈ (({0, 1, 2} : Finset ℤ).image (dilate 2 0))
+  ∧ dilate 2 0 0 + (6 : ℤ) ∉ (({0, 1, 2} : Finset ℤ).image (dilate 2 0)))
+
+-- Shadows `witness_addRibbon`: statement 1 instantiated -- ONE ribbon of size 6, not two.
+#guard decide ((addRibbon 3 ({0, 1, 2} : Finset ℤ) 0).image (dilate 2 0)
+  = addRibbon 6 (({0, 1, 2} : Finset ℤ).image (dilate 2 0)) (dilate 2 0 0))
+
+-- Shadows `witness_strictly_interior`: a height strictly between 0 and d - 1, so neither
+-- extreme of `ribbonHeight_le_sub_one` is the witness.
+#guard decide (ribbonHeight 4 ({0, 1} : Finset ℤ) 0 = 1)
+#guard decide (ribbonHeight 12 (({0, 1} : Finset ℤ).image (dilate 3 0)) (dilate 3 0 0) = 1)
+
+/-! ### The pin test -/
+
+-- Shadows `dilate_zero_not_height_preserving`: `0 < e` is LOAD-BEARING for statement 2 --
+-- at e = 0 the image collapses and the height reads 0 against 2. Not merely unproved: false.
+#guard decide (ribbonHeight (3 * 0) (({0, 1, 2} : Finset ℤ).image (dilate 0 0)) (dilate 0 0 0)
+  = 0)
+
+/-! ### Negative controls -/
+
+-- Shadows `not_dilated_height_differs`: the SAME window (size 12 at base 0) on a set that is
+-- not a dilated image gives 2, not 1. So statement 2 is a fact about dilation, not about the
+-- window.
+#guard decide (ribbonHeight 12 ({0, 3, 4} : Finset ℤ) 0 = 2)
+
+-- Shadows `size_must_multiply`: reading the dilated configuration at the ORIGINAL size 3
+-- gives the wrong height, so `addRibbon (d * e)` cannot be weakened to `addRibbon d`.
+#guard decide (ribbonHeight 3 (({0, 1, 2} : Finset ℤ).image (dilate 2 0)) (dilate 2 0 0) = 1)
+
+-- Shadows `two_dominoes_two_beads` / `four_ribbon_ne_two_dominoes`: R_4 is not R_2^2. Two
+-- dominoes at two DIFFERENT beads reach {2,7}; neither single 4-ribbon move on {0,5} does.
+#guard decide (addRibbon 2 (addRibbon 2 ({0, 5} : Finset ℤ) 0) 5 = ({2, 7} : Finset ℤ))
+#guard decide (addRibbon 4 ({0, 5} : Finset ℤ) 0 ≠ ({2, 7} : Finset ℤ))
+#guard decide (addRibbon 4 ({0, 5} : Finset ℤ) 5 ≠ ({2, 7} : Finset ℤ))
+
+end AdamsDilationTests
