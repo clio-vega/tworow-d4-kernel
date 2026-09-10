@@ -11,16 +11,34 @@ import Mathlib.Tactic.NormNum
 /-!
 # The `n = 4`, `μ = (4)` inconsistency certificate for ribbon reciprocity
 
-This file formalises **one cell** of `thm:local` (`n = 4`, `μ = (4)`), which is the only cell
-with a hand certificate. It does **not** formalise `thm:local` for `4 ≤ n ≤ 7`, and it
-makes **no** claim for general `n`. The registry node for `thm:local` stays at `computed`.
+This file formalises **one cell**, `n = 4` and `μ = (4)`, of the inconsistency of the
+Khanna–Loehr local identity. It makes **no** claim for any other `μ`, and **none** for
+general `n`. Nothing here is a formalisation of a statement quantified over `μ` or over `n`.
 
-## Source
+## Source, and a correction carried into it
 
-`~/projects/proofs/2026-09-10-Q129-reciprocity-does-not-deform.tex`, Theorem `thm:local` and
-the displayed proof "Proof of Theorem thm:local at `n = 4`, `μ = (4)`". The reciprocity being
-tested for deformation is the Adin–Bauer / Khanna–Loehr inversion reciprocity
+The certificate below is the one displayed in
+`~/projects/proofs/2026-09-10-Q129-reciprocity-does-not-deform.tex` (Theorem `thm:local`,
+and the proof headed "Proof of Theorem thm:local at `n = 4`, `μ = (4)`"). The reciprocity
+being tested for deformation is the Adin–Bauer / Khanna–Loehr inversion reciprocity
 (arXiv:2505.10783, §2).
+
+**That theorem's quantifier has since been refuted.** `thm:local` asserted inconsistency for
+*every* `μ ⊢ n` with `4 ≤ n ≤ 7`; `~/projects/proofs/2026-09-10-c2-Q140-local-identity-`
+`certificate-family.tex` (Theorem `thm:class`) exhibits the consistent cells
+`n = 4, μ = (2,2)` and `n = 5, μ ∈ {(3,2), (2,2,1)}`. The registry node
+`Q129-local-identity-unsolvable` is `dead-end` in consequence.
+
+**The cell formalised here is not affected**, and is the reason the scope note above is
+narrow. It survives as the `n = 4` member of the certificate family of `thm:mainrow`
+(`μ = (n)`, all `n ≥ 4`) in that same corrected paper. Concretely `cert` below is `t · c⁽⁴⁾`
+for the family's `c⁽ⁿ⁾`, checked entrywise; that stray factor of `t` is a normalisation
+artefact of the earlier paper and is exactly why the obstruction here reads `t² (t + 1)`
+rather than the family's `t (t + 1)`. The extra root at `t = 0` is therefore **not** a second
+anchor. Only the root at `t = -1` is structural — see `consistent_at_neg_one`.
+
+This file does not formalise `thm:class`, `thm:mainrow`, or the family `c⁽ⁿ⁾`. Those remain
+paper results; their registry nodes are unchanged by this file.
 
 ## The statement
 
@@ -98,11 +116,13 @@ theorem no_solution (t : R) (h : ∃ w : Fin 4 → R, M t *ᵥ w = b) : t ^ 2 * 
   rw [Matrix.dotProduct_mulVec, cert_annihilates, zero_dotProduct, cert_pairing] at key
   exact key.symm
 
-/-- **The `n = 4`, `μ = (4)` cell of `thm:local`.** Over `ℚ[X]` with `t = X`, the local
-identity `eq:local` has no solution: the inversion reciprocity does not deform along `t` at
-this cell.
+/-- **The `n = 4`, `μ = (4)` cell.** Over `ℚ[X]` with `t = X`, the local identity `eq:local`
+has no solution, so the inversion reciprocity does not deform along `t` at this cell.
 
-Scope: this is one cell of `thm:local`, not `thm:local`. -/
+Scope: this is one cell. It is the `n = 4` member of the `μ = (n)` family of `thm:mainrow`,
+and it is *not* a proof of that family, nor of any statement quantified over `μ`. Some other
+cells at this `n` are consistent — `n = 4, μ = (2,2)` is — which is why the quantifier must
+stay where it is. -/
 theorem reciprocity_does_not_deform :
     ¬ ∃ w : Fin 4 → Polynomial ℚ, M (Polynomial.X : Polynomial ℚ) *ᵥ w = b := by
   intro h
