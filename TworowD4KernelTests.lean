@@ -486,3 +486,26 @@ Shadows the witnesses of `TworowD4Kernel.AdamsDilation`. Every value below is th
 #guard decide (addRibbon 4 ({0, 5} : Finset ℤ) 5 ≠ ({2, 7} : Finset ℤ))
 
 end AdamsDilationTests
+
+section ReciprocityCertificate
+
+open Matrix TworowD4Kernel.ReciprocityCertificate
+
+-- Shadows `cert_annihilates_nonvacuous`: the certificate annihilates a numeric `M`.
+#guard decide (cert (2 : ℤ) ᵥ* M (2 : ℤ) = 0)
+
+-- Shadows `cert_pairing_nonvacuous`: and pairs with `b` to `t²(t+1) = 12` at `t = 2` ...
+#guard decide (cert (2 : ℤ) ⬝ᵥ (b : Fin 5 → ℤ) = 12)
+
+-- ... which is genuinely nonzero, so `no_solution` is not vacuous at `t = 2`.
+#guard decide ((cert (2 : ℤ) ⬝ᵥ (b : Fin 5 → ℤ)) ≠ 0)
+
+-- Shadows `consistent_at_neg_one_nonvacuous`: the anchor witness, denominators cleared.
+#guard decide (M (-1 : ℤ) *ᵥ ![1, 1, 1, 1] = ![4, 0, 0, 0, 0])
+
+-- The certificate degenerates at the anchor exactly as the paper says:
+-- `cert (-1) = (0, 0, -4, -4, -4)` is nonzero, but its pairing with `b` vanishes.
+#guard decide (cert (-1 : ℤ) = ![0, 0, -4, -4, -4])
+#guard decide (cert (-1 : ℤ) ⬝ᵥ (b : Fin 5 → ℤ) = 0)
+
+end ReciprocityCertificate
