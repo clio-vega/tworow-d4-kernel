@@ -509,3 +509,41 @@ open Matrix TworowD4Kernel.ReciprocityCertificate
 #guard decide (cert (-1 : ℤ) ⬝ᵥ (b : Fin 5 → ℤ) = 0)
 
 end ReciprocityCertificate
+
+section ReciprocityFamily
+
+open TworowD4Kernel.ReciprocityFamily
+
+-- The index set of the homogeneous equations `E (a, b)` — `a ≥ b ≥ 1`, `a + b ≤ n` — at
+-- `n = 4`. It has exactly four members, matching the four two-term rows of
+-- `ReciprocityCertificate.M`, i.e. `λ = (3,1), (2,2), (2,1,1), (1,1,1,1)`.
+#guard decide
+  (((List.range 5).flatMap fun a => (List.range 5).filterMap fun b =>
+      if 1 ≤ b ∧ b ≤ a ∧ a + b ≤ 4 then some (a, b) else none)
+    = [(1, 1), (2, 1), (2, 2), (3, 1)])
+
+-- And at `n = 5`, six members. (Both lists agree with an independent sympy enumeration.)
+#guard decide
+  (((List.range 6).flatMap fun a => (List.range 6).filterMap fun b =>
+      if 1 ≤ b ∧ b ≤ a ∧ a + b ≤ 5 then some (a, b) else none)
+    = [(1, 1), (2, 1), (2, 2), (3, 1), (3, 2), (4, 1)])
+
+-- `E (2, 2)` is the single equation that `4 ≤ n` buys: it is absent at `n = 3` ...
+#guard decide
+  (((List.range 4).flatMap fun a => (List.range 4).filterMap fun b =>
+      if 1 ≤ b ∧ b ≤ a ∧ a + b ≤ 3 then some (a, b) else none)
+    = [(1, 1), (2, 1)])
+
+-- Shadows `obstruction_nonvacuous`: the conclusion `t (t + 1) = 0` is not vacuous at `t = 2`.
+#guard decide ((2 : ℤ) * (2 + 1) = 6)
+#guard decide ((2 : ℤ) * (2 + 1) ≠ 0)
+
+-- Shadows `n3_consistent_at_two`, denominators cleared by `3`: the `n = 3` witness
+-- `(-1, 2, 2)/3` satisfies `E (1,1)`, `E (2,1)` and `G` at `t = 2` ...
+#guard decide (2 * (-1 : ℤ) + 2 = 0)
+#guard decide ((-1 : ℤ) + 2 + 2 = 3)
+
+-- ... and shadows `n3_fails_E22`: it violates `E (2,2)`, the equation `4 ≤ n` supplies.
+#guard decide (2 * (2 : ℤ) + 2 ≠ 0)
+
+end ReciprocityFamily
