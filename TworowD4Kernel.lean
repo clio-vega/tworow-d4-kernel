@@ -20,6 +20,7 @@ import TworowD4Kernel.ReciprocityCertificate
 import TworowD4Kernel.ReciprocityFamily
 import TworowD4Kernel.RibbonTranspose
 import TworowD4Kernel.RobinHood
+import TworowD4Kernel.DominanceIdeal
 import TworowD4Kernel.LemmaF
 import TworowD4Kernel.Maya
 import TworowD4Kernel.SelfReciprocal
