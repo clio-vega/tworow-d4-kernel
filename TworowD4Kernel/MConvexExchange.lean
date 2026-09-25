@@ -291,11 +291,11 @@ guards, both on `ℓ = 2`, `λ̂ = (2,1)`, where `J = {(2,1), (1,2)}`:
 -/
 section Witness
 
-private def lhat21 : ℕ → ℤ := fun c => if c = 0 then 2 else if c = 1 then 1 else 0
-private def al21 : ℕ → ℤ := fun c => if c = 0 then 2 else if c = 1 then 1 else 0
-private def be12 : ℕ → ℤ := fun c => if c = 0 then 1 else if c = 1 then 2 else 0
+def lhat21 : ℕ → ℤ := fun c => if c = 0 then 2 else if c = 1 then 1 else 0
+def al21 : ℕ → ℤ := fun c => if c = 0 then 2 else if c = 1 then 1 else 0
+def be12 : ℕ → ℤ := fun c => if c = 0 then 1 else if c = 1 then 2 else 0
 
-private lemma lhat21_isPart : IsPart 2 lhat21 := by
+lemma lhat21_isPart : IsPart 2 lhat21 := by
   constructor
   · apply antitone_nat_of_succ_le
     intro c
@@ -303,14 +303,14 @@ private lemma lhat21_isPart : IsPart 2 lhat21 := by
     split_ifs <;> first | (exfalso; assumption) | omega
   · intro c hc; simp only [lhat21]; split_ifs <;> omega
 
-private lemma al21_mem : InSupp 2 lhat21 al21 := by
+lemma al21_mem : InSupp 2 lhat21 al21 := by
   refine ⟨?_, ?_, ?_, ?_⟩
   · intro c hc; simp only [al21]; split_ifs <;> omega
   · intro c; simp only [al21]; split_ifs <;> omega
   · simp [psum, Finset.sum_range_succ, al21, lhat21]
   · decide
 
-private lemma be12_mem : InSupp 2 lhat21 be12 := by
+lemma be12_mem : InSupp 2 lhat21 be12 := by
   refine ⟨?_, ?_, ?_, ?_⟩
   · intro c hc; simp only [be12]; split_ifs <;> omega
   · intro c; simp only [be12]; split_ifs <;> omega
