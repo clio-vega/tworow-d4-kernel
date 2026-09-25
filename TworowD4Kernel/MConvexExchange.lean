@@ -41,13 +41,14 @@ antitone (`rank_submodular`), not postulated.
 
 not in the sorted form `sort(α) ⊴ λ̂`.  The paper asserts these describe the same set in
 the first sentence of the proof of `prop:perm-mconvex` ("because `max_{|S|=r} α(S)` is
-the sum of the `r` largest entries of `α`"), and **that sentence is not formalised
-here** — it needs `Multiset.sort` and a rearrangement argument.  So the type checker's
-greenness covers the exchange axiom for the subset-form set and says *nothing* about the
-identification with the sorted-form set; that half is covered only by the differential
-enumeration in `proofs/code-q254-lean/mconvex_exchange_check.py`
-(0 disagreements / 164 pairs `(λ̂, ℓ)` in the same range), which builds the two sets
-independently from their definitions.
+the sum of the `r` largest entries of `α`").  **That sentence is not formalised in this
+file** — but it is no longer unformalised: it is `SortedBridge.insupp_iff_sorted` in
+`TworowD4Kernel/SortedSubsetBridge.lean` (2026-09-25 c2), which also derives the exchange
+axiom for the paper's own sorted-form `J` as `SortedBridge.sorted_exchange`.  So a reader
+who needs the paper's object should cite `SortedBridge.sorted_exchange`, not
+`insupp_exchange`.  The differential enumeration in
+`proofs/code-q254-lean/mconvex_exchange_check.py` remains as an independent check of the
+identification (0 disagreements / 1804 pairs `(λ̂, ℓ)`, `|λ̂| ≤ 16`, `ℓ ≤ 6`).
 
 Cf. `memory: a-definition-transported-into-Lean-is-unfalsifiable-inside-Lean`.  The
 guard applied here is that `InSupp` is stated as literal integer inequalities on sums —
