@@ -41,11 +41,12 @@ lies in `W_ℓ` — that is `J' ⊆ J`).
 ## What Lean still does not see
 
 `MConvexExchange`'s docstring lists one gap ("the sorted form is not formalised"); this
-file closes it.  The *other* gap named there is untouched and remains owed: Murota's
-**symmetric** exchange axiom (B-EXC) demands `β + eᵢ - e_j ∈ J` for the same `j`.  That
-is not proved here, is equivalent to the one-sided form only by a Murota–Shioura theorem
-which is neither formalised nor used, and is covered only by brute force
-(0 failures / 876317 triples) in `proofs/code-q254-lean/`.
+file closes it.  The *other* gap named there — Murota's **symmetric** exchange axiom
+(B-EXC), which demands `β + eᵢ - e_j ∈ J` for the same `j` — is not proved in this file
+either, but it is **no longer owed**: it is `SymmetricExchange.sorted_symm_exchange`
+(2026-09-29), stated for the paper's own sorted-form `J` and proved via this file's
+`insupp_iff_sorted`.  No Murota–Shioura input.  Nothing here is now carried by brute
+force alone.
 
 Indices are 0-based; the paper is 1-based.  `Λ_r` is `psum lhat r`.
 -/

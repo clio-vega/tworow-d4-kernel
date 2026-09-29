@@ -23,11 +23,15 @@ bound on `ℓ` and no bound on `λ̂`.*  Precisely what is **proved** here is
 which is the definition of M-convexity quoted verbatim in the paper (§"The problem",
 lines 95--97 of the `.tex`), and the definition used throughout the SNP / Lorentzian
 literature (WZZ, Brändén--Huh).  Murota's symmetric axiom (B-EXC) additionally demands
-`β + eᵢ - e_j ∈ J` **for the same `j`**; that is *not* proved here, and the paper's
-argument does not deliver it either.  The two axioms define the same class of sets by a
-theorem of Murota--Shioura which is **not formalised** and **not used**.  The symmetric
-form is instead checked by brute force in `proofs/code-q254-lean/`
-(0 failures / 876317 triples `(α, β, i)`, all `λ̂` with `|λ̂| ≤ 9`, `ℓ ≤ 4`).
+`β + eᵢ - e_j ∈ J` **for the same `j`**; that is not proved *in this file*, and the
+paper's argument does not deliver it either.  **It is no longer owed**: as of 2026-09-29
+it is `SymmetricExchange.insupp_symm_exchange` (and, for the paper's own sorted-form `J`,
+`SymmetricExchange.sorted_symm_exchange`), proved directly from `tight_union` +
+`tight_inter` + `rank_submodular`.  The Murota--Shioura theorem that the two axioms cut
+out the same class of sets is still **not formalised** and **not used** — it is not
+needed, because B-EXC is now proved outright.  The strengthening is strict, not cosmetic:
+`SymmetricExchange.symm_conjunct_not_automatic` exhibits a `j` that satisfies
+`insupp_exchange`'s conclusion and violates B-EXC.
 
 What is **assumed, not proved**: nothing.  No axiom, no `sorry`, no import of the
 paper's conclusion.  Submodularity of the rank function is *derived* from `λ̂` being
