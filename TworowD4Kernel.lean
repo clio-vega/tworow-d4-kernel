@@ -40,6 +40,7 @@ import TworowD4Kernel.ThreeRowC2Boundary
 import TworowD4Kernel.ThreeRowC3Boundary
 import TworowD4Kernel.ThreeRowC4Boundary
 import TworowD4Kernel.ThreeRowC4InteriorN4
+import TworowD4Kernel.DiscreteConcavity
 
 /-!
 # Two-row / three-row `d = 4` fiber-vanishing kernels
