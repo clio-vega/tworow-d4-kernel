@@ -25,6 +25,7 @@ import TworowD4Kernel.RobinHood
 import TworowD4Kernel.DominanceIdeal
 import TworowD4Kernel.LemmaF
 import TworowD4Kernel.MConvexExchange
+import TworowD4Kernel.MetricCriterion
 import TworowD4Kernel.SortedSubsetBridge
 import TworowD4Kernel.SymmetricExchange
 import TworowD4Kernel.SnpLatticePoints
