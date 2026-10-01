@@ -51,11 +51,13 @@ The factorisation the paper names is still recorded, as `GR_eq_rho_comp_H`, so n
 
 Stated here, in the section a copier reads:
 
-* **The trapezoid formula itself.**  `prop:regII` derives
-  `(1_[a,b] * 1_[c,d]) s = min (s-ℓ+1, h-s+1, n_t, m_t)_+` from the convolution of two interval
-  indicators.  Convolution on `ℤ` is not defined here; `GR` is *defined* by the right-hand side.
-  What is formalised is everything the paper deduces *from* that formula.  The one identity the
-  derivation leans on in passing, `min(α,β)_+ = min(α_+,β_+)`, is `posPart_min`.
+* ~~**The trapezoid formula itself.**~~  **Closed 2026-10-01** in
+  `TworowD4Kernel/Convolution.lean`.  `GR` below is still *defined* by the right-hand side
+  `min (s-ℓ+1, h-s+1, n_t, m_t)_+`, but `Convolution.conv_ind_ind` now proves that this equals
+  the convolution `1_[a,b] * 1_[c,d]`, `Convolution.sum_conv_eq_GR` identifies the paper's
+  `eq:G` (a sum of convolutions) with `GR`, and `Convolution.sum_conv_PFtwo` restates
+  `GR_PFtwo` for the paper's object.  The one identity the derivation leans on in passing,
+  `min(α,β)_+ = min(α_+,β_+)`, is `posPart_min`.
 * **The `∓∞`-extended version of `lem:trunc`.**  The paper writes "`c` may be a concave function
   with interval domain extended by `-∞`; the same proof applies".  "The same proof applies" is a
   proposition, not a remark, and only the finite version (`PFtwo_posPart`, `c : ℤ → ℤ`) is
@@ -63,8 +65,11 @@ Stated here, in the section a copier reads:
 * **Lemma T** (`conj:T`) itself is a conjecture in the paper and is not formalised; only the
   sharpness witness `Gsharp` of `rem:sharp` is.
 * `prop:regI` (the region I/III factorisation through `(P3)`, closure of `PF₂` under
-  convolution) is not formalised; it needs convolution.  Its *concavity* input is
-  `PFtwo_posPart`, which is.
+  convolution) is not formalised.  Its *concavity* input is `PFtwo_posPart`, which is.  As of
+  2026-10-01 `Convolution.conv_ind_left` records that what `prop:regI` convolves is an interval
+  indicator, i.e. that it needs only *window sum of `PF₂` is `PF₂`* and not the full (P3) it
+  cites; that weaker statement is still unproved, with the obstruction written out in
+  `Convolution.lean`.
 
 ## A citation in the paper whose object is undefined
 
