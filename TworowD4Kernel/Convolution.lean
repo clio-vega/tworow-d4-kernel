@@ -186,15 +186,23 @@ theorem sum_conv_PFtwo (T : Finset ι) (a b c d : ι → ℤ) (l h : ℤ)
 
 /-! ### The sliding-window reduction, for `prop:regI`
 
-`prop:regI` is the remaining unformalised proposition of the paper.  It cites **(P3)**, closure
-of `PF₂` under convolution, in full generality.  What it actually convolves is an *interval
-indicator* against a `PF₂` sequence, and the next theorem says what that operation is: a
-**sliding window sum** of fixed width.  So the statement `prop:regI` needs is
+`prop:regI` is the remaining unformalised proposition of the paper.  It invokes **(P3)**,
+closure of `PF₂` under convolution, in full generality.  (P3) is *not* an uncited import: the
+paper proves it from scratch, via `T(f*g) = T(f) T(g)` on bi-infinite Toeplitz matrices plus
+Cauchy–Binet — registry node `pf2-convolution` of `cylindric-lorentzian.json`, trust `proved`,
+`proofs/2026-09-26-c1-cylindric-lorentzian.tex`, with Hoggar's classical statement at
+arXiv:1906.09633.  So the scope point below is about what a *formalisation* owes, not about a
+gap in the paper.
+
+What `prop:regI` actually convolves is an *interval indicator* against a `PF₂` sequence, and the
+next theorem says what that operation is: a **sliding window sum** of fixed width.  So the
+statement a Lean `prop:regI` needs is only
 
   *a sliding window sum of a `PF₂` sequence is `PF₂`*,
 
-which is strictly weaker than (P3).  The reduction is proved here; the implication itself is
-**not** proved in this file — see the scope note at the end. -/
+strictly weaker than (P3), and reachable without Toeplitz matrices or Cauchy–Binet.  The
+reduction is proved here; the implication itself is **not** proved in this file — see the scope
+note at the end. -/
 
 /-- Convolution against an interval indicator is a sliding window sum of fixed width
 `B - A + 1`: `(1_[A,B] * w) (s) = ∑_{x = s-B}^{s-A} w x`.  No hypothesis on `w`. -/
@@ -222,10 +230,12 @@ theorem conv_ind_left_window_card (A B : ℤ) (hAB : A ≤ B) (s : ℤ) :
 Stated here, in the section a copier reads.  Both items are propositions in the paper that are
 carried by a remark or a citation rather than by a proof.
 
-* **(P3) is cited more strongly than it is used, and the weaker statement is not proved here.**
-  `conv_ind_left` reduces `prop:regI`'s convolution to a sliding window sum, so what the paper
-  needs is only *window sum of `PF₂` is `PF₂`*, not the full closure of `PF₂` under
-  convolution.  That reduction is a theorem above.  The implication is **not** proved.  What a
+* **(P3) is invoked more strongly than it is used; the weaker statement is not proved here.**
+  `conv_ind_left` reduces `prop:regI`'s convolution to a sliding window sum, so what is needed
+  is only *window sum of `PF₂` is `PF₂`*, not the full closure of `PF₂` under convolution.
+  That reduction is a theorem above.  The implication is **not** proved.  (P3) itself *is*
+  proved in the paper by Toeplitz/Cauchy–Binet, so this is a statement about the cheapest route
+  to a formalised `prop:regI`, not a defect in the paper.  What a
   later session has to supply is the log-concavity of
   `W (s) = ∑_{x = s-B}^{s-A} w x`; the algebra of the obstruction, with
   `α = w (s-1-B)`, `β = w (s-B)`, `γ = w (s-A)`, `δ = w (s-A+1)` (so `β, γ` are the two ends of
