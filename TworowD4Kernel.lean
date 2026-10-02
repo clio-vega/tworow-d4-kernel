@@ -44,6 +44,7 @@ import TworowD4Kernel.ThreeRowC4InteriorN4
 import TworowD4Kernel.DiscreteConcavity
 import TworowD4Kernel.LemmaT
 import TworowD4Kernel.TailSum
+import TworowD4Kernel.WindowSumPFtwo
 
 /-!
 # Two-row / three-row `d = 4` fiber-vanishing kernels
