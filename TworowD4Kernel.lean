@@ -29,6 +29,7 @@ import TworowD4Kernel.LemmaF
 import TworowD4Kernel.MConvexExchange
 import TworowD4Kernel.MetricCriterion
 import TworowD4Kernel.SortedSubsetBridge
+import TworowD4Kernel.SublevelMConvex
 import TworowD4Kernel.SymmetricExchange
 import TworowD4Kernel.SnpLatticePoints
 import TworowD4Kernel.Maya
