@@ -33,9 +33,24 @@ sampled around its own defect. A single *false* violation of this lemma is what 
 "At most one positive eigenvalue" is formalised as `sigPos Q <= 1`, where `Q` is the quadratic
 form `x` maps to `x dotProduct (M *mulVec x)` and `sigPos` is Mathlib's Sylvester inertia index
 (`sigPos`: the maximal `finrank` of a subspace on which `Q` is positive definite).
-By the uniqueness half of Sylvester's law of inertia this is exactly the number of positive
-eigenvalues counted with multiplicity; see `sigPos_le_one_iff_card_pos_eigenvalues` below for the
-bridge to `Matrix.IsHermitian.eigenvalues`.
+By the uniqueness half of Sylvester's law of inertia this is *mathematically* exactly the number
+of positive eigenvalues counted with multiplicity.
+
+**That bridge is NOT formalised, here or in Mathlib.** This file proves the `sigPos` form only.
+An earlier draft of this docstring pointed the reader at a lemma
+`sigPos_le_one_iff_card_pos_eigenvalues` "below"; no such declaration exists and none ever did.
+The missing statement is
+
+  `sigPos M.toQuadraticForm' = {k | 0 < hM.eigenvalues k}.ncard`  (`hM : M.IsHermitian`)
+
+whose proof needs the `QuadraticMap.IsometryEquiv` from `M.toQuadraticForm'` to
+`weightedSumSquares R hM.eigenvalues` induced by `Matrix.IsHermitian.spectral_theorem`, which is
+unbuilt. Mathlib has `sigPos` and it has `Matrix.IsHermitian.eigenvalues`; nothing connects them,
+and there is no Cauchy interlacing in Mathlib either.
+
+This is a gap in *coverage*, not in the mathematics, and it costs the application nothing: the
+paper proof never counts an eigenvalue. It produces a 2-dimensional positive-definite subspace and
+contradicts a dimension bound, so `sigPos <= 1` is the hypothesis it actually uses.
 -/
 
 namespace TworowD4Kernel
