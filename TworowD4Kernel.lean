@@ -25,6 +25,7 @@ import TworowD4Kernel.RibbonTranspose
 import TworowD4Kernel.RobinHood
 import TworowD4Kernel.Convolution
 import TworowD4Kernel.DominanceIdeal
+import TworowD4Kernel.LabelledBlocks
 import TworowD4Kernel.LemmaF
 import TworowD4Kernel.MConvexExchange
 import TworowD4Kernel.MetricCriterion
