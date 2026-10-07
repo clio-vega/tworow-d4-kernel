@@ -574,3 +574,23 @@ section TypedBlocks
 #guard decide ((0 : ℕ) ≠ 2)
 
 end TypedBlocks
+
+
+section NonCyclotomicRoot
+
+-- Shadows `D_eval_neg_one` at the odd value `b = 3`: the sign at `-1` that the intermediate
+-- value step of `exists_root_Ioo` needs. Evaluated over `ℤ`, where `decide` applies.
+#guard decide ((-1 : ℤ) ^ 3 - (-1 : ℤ) ^ 2 + 1 = -1)
+#guard decide ((-1 : ℤ) ^ 3 - (-1 : ℤ) ^ 2 + 1 < 0)
+
+-- Shadows `D_eval_zero`: the sign at `0`, the other end of the interval.
+#guard decide ((0 : ℤ) ^ 3 - (0 : ℤ) ^ 2 + 1 = 1)
+
+-- Negative control, shadowing `D_four_eval_neg_one` and `not_exists_root_Ioo_four`.
+-- Drop `Odd b` and take `b = 4`: the sign at `-1` reverses to `+3`, there is no sign change
+-- across `[-1, 0]`, and the conclusion of `exists_root_Ioo` is false for this `b`.
+-- `3 > 0 ≠ -1 < 0`, so the parity hypothesis is load-bearing and this control fires.
+#guard decide ((-1 : ℤ) ^ 4 - (-1 : ℤ) ^ 3 + 1 = 3)
+#guard decide ((-1 : ℤ) ^ 4 - (-1 : ℤ) ^ 3 + 1 > 0)
+
+end NonCyclotomicRoot

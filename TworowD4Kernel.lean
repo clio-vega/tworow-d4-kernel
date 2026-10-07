@@ -37,6 +37,7 @@ import TworowD4Kernel.SublevelMConvex
 import TworowD4Kernel.SymmetricExchange
 import TworowD4Kernel.SnpLatticePoints
 import TworowD4Kernel.Maya
+import TworowD4Kernel.NonCyclotomicRoot
 import TworowD4Kernel.SelfReciprocal
 import TworowD4Kernel.SignedCount
 import TworowD4Kernel.SubsetIdentityGeneralC
