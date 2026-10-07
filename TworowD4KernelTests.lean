@@ -547,3 +547,30 @@ open TworowD4Kernel.ReciprocityFamily
 #guard decide (2 * (2 : ℤ) + 2 ≠ 0)
 
 end ReciprocityFamily
+
+
+section TypedBlocks
+
+-- Shadows `TypedBlocks.card_typedBlockFunctions_ex`: the type-split count on
+-- `A = Fin 5`, parts `{0,1,2}` / `{3,4}`, sizes `(2,1)` / `(1,1)`, is `6` --
+-- enumerated over all `32` functions `Fin 5 -> Fin 2`.
+#guard decide (#(TypedBlocks.typedBlockFunctions (Fin 5) TypedBlocks.tauEx TypedBlocks.mEx) = 6)
+
+-- Shadows `TypedBlocks.prod_multinomial_ex`: the product `3 * 2` the theorem predicts.
+#guard decide ((∏ s, Nat.multinomial univ (TypedBlocks.mEx s)) = 6)
+
+-- Shadows `TypedBlocks.sum_mEx`: the summation hypothesis holds here.
+#guard decide (∀ s, ∑ v, TypedBlocks.mEx s v
+  = Fintype.card (TypedBlocks.typePart TypedBlocks.tauEx s))
+
+-- Negative control, shadowing `TypedBlocks.sum_mBadEx_ne`,
+-- `card_typedBlockFunctions_badEx` and `prod_multinomial_badEx`. Sizes `(2,0)` on a
+-- part of size `3`: the hypothesis fails, the count is `0`, the product is `2`.
+-- `0 ≠ 2`, so the hypothesis is load-bearing and this control fires.
+#guard decide (∑ v, TypedBlocks.mBadEx 0 v
+  ≠ Fintype.card (TypedBlocks.typePart TypedBlocks.tauEx 0))
+#guard decide (#(TypedBlocks.typedBlockFunctions (Fin 5) TypedBlocks.tauEx TypedBlocks.mBadEx) = 0)
+#guard decide ((∏ s, Nat.multinomial univ (TypedBlocks.mBadEx s)) = 2)
+#guard decide ((0 : ℕ) ≠ 2)
+
+end TypedBlocks

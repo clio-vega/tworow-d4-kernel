@@ -58,8 +58,12 @@ and the conditions for distinct `α` constrain disjoint parts of the data. The e
 `I_α(w₀v, w₀)` is the number of `v`-components, each of which is an independent block of
 prescribed size `c^w_{u,v}`.
 
-The product formula itself is recorded as `multinomial_prod_pow`, the form in which
-Theorem A uses it: a product of independent multinomials with repeated block sizes.
+The product over types -- a product of independent multinomials, which is the form in
+which Theorem A uses this lemma -- is `TypedBlocks.card_typedBlockFunctions_eq_prod_multinomial`
+in `TworowD4Kernel.TypedBlocks`.
+
+(Until 2026-10-07 this paragraph pointed at a declaration named `multinomial_prod_pow`,
+which was never written: a docstring is a claim about contents, and that one was false.)
 -/
 
 namespace TworowD4Kernel
