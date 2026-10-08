@@ -41,11 +41,18 @@ read as formalising Theorem D's quantification over all `ℓ(λ) ≤ 2` and all 
 proved is the obstruction mechanism at the single polynomial, for the exponent `±1 = +1` shape.
 
 **Scope of the product shape.** Theorem D's display allows exponents `±1`, i.e. factors in the
-denominator too. What is proved here is the numerator-only form `t^c ∏ (1 - t^{d_i})`. The
-`-1` exponents cost nothing mathematically — clearing denominators turns
-`D_b · ∏(1 - t^{e_j}) = t^c ∏(1 - t^{d_i})` into the same argument, since the left side still
-vanishes at the root while the right side does not — but that restatement is *not* formalised
-below, and a reader should not take `not_product_form` to cover it.
+denominator too. What is proved *here* is the numerator-only form `t^c ∏ (1 - t^{d_i})`, and
+`not_product_form` below should not be read as covering the signed case.
+
+**That gap is now closed, in `TworowD4Kernel/SignedProductFormObstruction.lean`** (2026-10-08 c2):
+`not_signed_product_form` allows arbitrary `e_i ∈ ℤ`, `not_product_form_pm_one` is the literal `±1`
+display, and `not_product_form_ratio` is the quotient form. No denominator clearing was needed —
+each factor `1 - t^{d_i}` is strictly *positive* at the root by `one_sub_pow_pos` (reused from this
+file), and positivity survives every integer power, so the ratio is nonzero there for the same
+reason the product is. The remark that previously stood here — that clearing denominators reduces
+it to "the same argument, since the left side still vanishes at the root" — was a correct
+*conclusion* reached by an unnecessary route; see that file's `cleared_lhs_eq_zero_at_one` for why
+the related `t = 1` route does not work at all.
 
 ## Multiset, and the `List` precedent in this repo
 
