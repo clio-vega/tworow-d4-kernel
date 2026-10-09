@@ -60,14 +60,25 @@ definitions in this project**; the identification `D_{a,b} = Y^{(a,b)}_{(a,b)} =
 is paper-side (Theorem C at `m = b`). Here `t^b - t^(b-1) + 1` is simply written down, and
 Theorem D itself is **not** formalised. `unproved != unformalised`.
 
-New boundary: `Odd b` is **not** removable, and that is a fact about the mathematics. For even `b`,
-`D_b` has no real root at all (`not_exists_root_Ioo_four` records `b = 4` as a theorem), and every
-statement here is proved by evaluating at a real root in `(-1,0)`. Widening the factor class does
-nothing for even `b`; that case needs a coefficient argument with no root location in it.
+New boundary: `Odd b` is **not** removable *from this file*, and that is a fact about the
+mathematics. For even `b`, `D_b` has no real root at all (`not_exists_root_Ioo_four` records
+`b = 4` as a theorem), and every statement here is proved by evaluating at a real root in
+`(-1,0)`. Widening the factor class does nothing for even `b`.
 
-Also not claimed: that `D_b` is not a product of **general** cyclotomic polynomials. That instance
-needs "`Phi_n` has no root in `(-1,0)` for every `n`", which is not proved here -- only the
-`n = 1, 2` cases are, by hand.
+Correction to this session's gap note, which predicted the even case "needs a coefficient argument
+with no root location in it": it is **closed on paper**, same day, and *not* by a coefficient
+argument. `D_b(alpha) = 0` is `alpha^(b-1)(alpha - 1) = -1`, so `|alpha| = 1` forces
+`|alpha - 1| = 1` too, and the unit circles about `0` and `1` meet in exactly two points; since
+`deg D_b = b > 2` some root is off the circle. That is a root-location argument on the unit circle
+rather than on `(-1,0)` -- see `projects/proofs/2026-10-09-c2-product-form-invariance.tex`. It is
+**not formalised**, here or anywhere, and nothing in this file should be read as covering even `b`.
+
+Also not claimed here: that `D_b` is not a product of **general** cyclotomic polynomials. The
+instance by the present mechanism would need "`Phi_n` has no root in `(-1,0)` for every `n`"; only
+`n = 1, 2` are proved below, by hand. On paper the stronger statement is already available --
+`Phi_6` is the *only* cyclotomic that can divide `D_b`, and it does iff `b = 2 mod 6`, same
+reference -- so this is an unformalised known result and a concrete next Lean target, not an open
+question.
 -/
 
 namespace TworowD4Kernel.ProductForm
