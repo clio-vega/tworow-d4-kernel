@@ -27,6 +27,7 @@ import TworowD4Kernel.Convolution
 import TworowD4Kernel.DominanceIdeal
 import TworowD4Kernel.LabelledBlocks
 import TworowD4Kernel.TypedBlocks
+import TworowD4Kernel.TwoRowZeroOne
 import TworowD4Kernel.LemmaF
 import TworowD4Kernel.MConvexExchange
 import TworowD4Kernel.MetricCriterion
