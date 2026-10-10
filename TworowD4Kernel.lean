@@ -42,6 +42,7 @@ import TworowD4Kernel.NonCyclotomicRoot
 import TworowD4Kernel.ProductFormObstruction
 import TworowD4Kernel.SignedProductFormObstruction
 import TworowD4Kernel.AbstractFactorObstruction
+import TworowD4Kernel.UnitCircleObstruction
 import TworowD4Kernel.SelfReciprocal
 import TworowD4Kernel.SignedCount
 import TworowD4Kernel.SubsetIdentityGeneralC
