@@ -28,6 +28,11 @@ content of this file:
 
 Hence `Fin.card_ascentFree_lt` : the open locus is strictly larger as soon as `h ≥ 2`.
 
+A third strand, independent of the dichotomy: at content `(1^n)` every occupation word is a
+**unit vector**, and `ZMod.ascentSet_unitVector` identifies its cyclic ascent set as the
+singleton `{i - 1}`, whence `ZMod.nu_eq_card_of_content_ones` : the total count is exactly
+`n`.  That is the `ν(T) = n` input to the Q410 contradiction.
+
 ## Why the cyclic case is the hard one
 
 The open statement is a *local-to-global* fact about a linear order, and Mathlib already
@@ -325,5 +330,106 @@ example : (univ.filter fun θ : Fin 3 → Bool => Fin.J θ = ∅).card = 4 := by
 example : (univ.filter fun θ : Fin 4 → Bool => Fin.J θ = ∅).card = 5 := by decide
 
 end Checks
+
+
+/-! ## The count at content `(1^n)`
+
+The second of the three assertions the parent registry node makes and this file did not
+carry.  Content `(1^n)` means every step of the tableau adds **exactly one box**, so each
+step's occupation word `θ^(a)` is a **unit vector** `e_i`, and the claim `ν(T) = n` is the
+statement that every unit vector contributes exactly one cyclic ascent.
+
+The set is a **singleton, not merely a one-element count**: `J (e i) = {i - 1}`.  The only
+`false → true` transition of a unit vector is at the slot just before its support.  Stating
+the set and deriving the cardinality is deliberate -- two sets of the same size are not the
+same set, and the singleton is what identifies *which* ascent the box contributes.
+
+**Scope.** What is formalised is the word-level count: given that each `θ^(a)` is a unit
+vector, the sum is `n`.  The tableau-to-word reduction -- that content `(1^n)` forces each
+`θ^(a)` to *be* a unit vector -- is a fact about the strip combinatorics and is **not**
+formalised here.  See `projects/proofs/2026-10-10-c2-Q410-korff-cylindric-weight.tex`.
+
+Provenance: the index set is Korff's, **arXiv:1110.6356, Definition 5.5**.  The count was
+verified independently by Rick at `(k,ℓ,n) = (1,0,4), (1,1,6), (1,2,8), (2,0,4), (2,1,6)`,
+where `ν` took only the value `n`.
+-/
+
+namespace ZMod
+
+/-- `(1 : ZMod h) ≠ 0` once `h ≥ 2`.  **This is the only place `2 ≤ h` is used** in the
+unit-vector count, and it is what makes `i - 1` a slot *distinct* from `i`. -/
+theorem one_ne_zero_of_two_le {h : ℕ} (hh : 2 ≤ h) : (1 : ZMod h) ≠ 0 := by
+  haveI : Fact (1 < h) := ⟨hh⟩
+  intro hcon
+  have hv := ZMod.val_one h
+  rw [hcon, ZMod.val_zero] at hv
+  exact absurd hv (by omega)
+
+/-- **The local count, set form.**  The cyclic ascent set of the unit vector `e i` is the
+singleton `{i - 1}`: a single box creates exactly one `false → true` transition, immediately
+before the box.  `h ≥ 2` is needed for `i - 1 ≠ i`; see
+`card_ascentSet_unitVector_eq_zero_at_one` for the failure at `h = 1`. -/
+theorem ascentSet_unitVector {h : ℕ} [NeZero h] (hh : 2 ≤ h) (i : ZMod h) :
+    J (fun j => decide (j = i)) = {i - 1} := by
+  ext j
+  simp only [J, mem_filter, mem_univ, true_and, mem_singleton,
+    decide_eq_false_iff_not, decide_eq_true_eq]
+  constructor
+  · intro ⟨_, h2⟩
+    exact eq_sub_of_add_eq h2
+  · intro hj
+    subst hj
+    refine ⟨?_, by ring⟩
+    intro hcon
+    exact one_ne_zero_of_two_le hh (sub_eq_self.mp hcon)
+
+/-- **The local count, cardinality form.**  `|J(e i)| = 1`. -/
+theorem card_ascentSet_unitVector {h : ℕ} [NeZero h] (hh : 2 ≤ h) (i : ZMod h) :
+    (J (fun j => decide (j = i))).card = 1 := by
+  rw [ascentSet_unitVector hh i, card_singleton]
+
+/-- **`ν(T) = n` at content `(1^n)`.**  For any sequence of `n` single boxes at positions
+`θ a`, the total cyclic ascent count is exactly `n` -- independent of *where* the boxes are.
+This is the numerical input that turns `ord_{t=1} c_α ≥ min ν` into a contradiction. -/
+theorem nu_eq_card_of_content_ones {h n : ℕ} [NeZero h] (hh : 2 ≤ h) (θ : Fin n → ZMod h) :
+    (∑ a : Fin n, (J (fun j => decide (j = θ a))).card) = n := by
+  simp [card_ascentSet_unitVector hh]
+
+/-- **Ablation: `2 ≤ h` is necessary about the statement, not about the proof.**  At `h = 1`
+every word on `ZMod 1` is constant -- the unit vector `e 0` *is* the all-`true` word, its own
+cyclic successor -- so `J = ∅` and the count is `0`, not `1`.  Hence `ν(T) = 0 ≠ n`.  `h = 2k`
+with `k ≥ 1` means `h ≥ 2` holds free in the application, but a lemma that silently needs a
+hypothesis is a lemma whose statement is wrong. -/
+theorem card_ascentSet_unitVector_eq_zero_at_one :
+    (J (fun j : ZMod 1 => decide (j = 0))).card = 0 := by decide
+
+end ZMod
+
+/-! ### Brute-force cross-checks for the unit-vector count
+
+These evaluate the `Finset` definitions by kernel reduction and share no lemma with the
+proofs above.  The first four cover all `2 + 3 + 4 + 5 = 14` slots at `h = 2, 3, 4, 5`; the
+next three check the *sum* over the whole word space at `(h, n) = (2,4), (2,6), (3,4)`.
+
+The last pair is the arm that reports whether `J` reads **adjacency** at all: at `h = 4` a
+two-box word has `|J| = 1` when its support is adjacent and `|J| = 2` when it is not.  A
+gate that could not separate those would not be measuring ascents. -/
+
+section UnitVectorChecks
+open ZMod
+
+example : ∀ i : ZMod 2, (J (fun j => decide (j = i))).card = 1 := by decide
+example : ∀ i : ZMod 3, (J (fun j => decide (j = i))).card = 1 := by decide
+example : ∀ i : ZMod 4, (J (fun j => decide (j = i))).card = 1 := by decide
+example : ∀ i : ZMod 5, (J (fun j => decide (j = i))).card = 1 := by decide
+
+example : ∀ θ : Fin 4 → ZMod 2, (∑ a, (J (fun j => decide (j = θ a))).card) = 4 := by decide
+example : ∀ θ : Fin 6 → ZMod 2, (∑ a, (J (fun j => decide (j = θ a))).card) = 6 := by decide
+example : ∀ θ : Fin 4 → ZMod 3, (∑ a, (J (fun j => decide (j = θ a))).card) = 4 := by decide
+
+example : (J (fun j : ZMod 4 => decide (j = 0 ∨ j = 1))).card = 1 := by decide
+example : (J (fun j : ZMod 4 => decide (j = 0 ∨ j = 2))).card = 2 := by decide
+
+end UnitVectorChecks
 
 end TworowD4Kernel.CyclicAscent
