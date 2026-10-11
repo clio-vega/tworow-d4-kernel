@@ -47,7 +47,13 @@ carry so little.
 
 This is the combinatorial half of the Q410 theorem
 (`projects/proofs/2026-10-10-c2-Q410-korff-cylindric-weight.tex`): no cyclically
-`ψ`-graded weight carries Warnaar's determinant.  The cyclic lemma is the step that
+`ψ`-graded weight carries Warnaar's determinant.  The cyclic index set being analysed is
+Korff's, **arXiv:1110.6356, Definition 5.5**: `J(θ) = {i ∈ ℤ/hℤ : θ_i = 0, θ_{i+1} = 1}`, and
+`ZMod.ascentFree_iff_const` is the assertion that it is empty exactly on the constants.  The
+open index set it is contrasted with is Macdonald's ordinary `ψ` ascent set.  The determinant
+on the far side is Warnaar, **arXiv:2511.17034, Section 6**; the combinatorial evaluation it
+generalises is Huh--Kim--Krattenthaler--Okada, **arXiv:2301.13117, Theorem 3.3**.
+The cyclic lemma is the step that
 reduces a non-constant occupation word to an ascent; the companion `ord_{t=1}` count is
 not formalised here.  The open half underwrites Q417: a wrap-blind grading sees `h + 1`
 ascent-free strips where the cyclic one sees `2`.
