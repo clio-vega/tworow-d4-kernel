@@ -58,6 +58,7 @@ import TworowD4Kernel.LemmaT
 import TworowD4Kernel.TailSum
 import TworowD4Kernel.WindowSumPFtwo
 import TworowD4Kernel.CapacityL1
+import TworowD4Kernel.CyclicAscent
 
 /-!
 # Two-row / three-row `d = 4` fiber-vanishing kernels
