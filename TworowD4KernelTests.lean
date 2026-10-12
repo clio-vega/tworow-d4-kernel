@@ -644,3 +644,51 @@ example :
     Polynomial.rootMultiplicity (1 : ℚ)
       (∏ i ∈ (univ : Finset (Fin 2)), (1 - X ^ (![0, 3] i))) = 0 := by
   rw [Polynomial.rootMultiplicity_prod_one_sub_X_pow_eq_zero _ _ ⟨0, by decide, by decide⟩]
+
+/-! ## Gap 3: the region condition forces `m_i ≥ 1` on `J` (`RegionMultiplicity.lean`)
+
+Three executable witnesses. Types are **pinned** throughout (`h w : ℕ`/`ℤ` given as literals,
+`x : ℕ → ℤ` given explicitly) so that no `autoImplicit` variable can widen a control into a
+generic statement that holds for a reason other than the one under test. -/
+
+section Gap3
+open TworowD4Kernel.Region
+
+/-- Satisfiability + tightness at the **wrapped site** `i = h`. `h = 2`, `w = 2`,
+`x = (1,0)`, `θ = (1,0)`, so the endpoint `x + θ = (2,0)` is in `R` (`2 - 2 ≤ 0`) and
+`2 ∈ J(θ)` (`θ_2 = 0`, `θ_3 = θ_1 = 1`). Here `m_2(x) = w - (x_1 - x_2) = 1` **exactly**,
+so `one_le_mult_of_mem_J` is non-vacuous and its bound is attained. -/
+example : Mem 2 (2 : ℤ) (shift (fun i => if i = 1 then (1 : ℤ) else 0) (fun i => decide (i = 1)))
+    ∧ inJ 2 (fun i => decide (i = 1)) 2
+    ∧ mult 2 (2 : ℤ) (fun i => if i = 1 then (1 : ℤ) else 0) 2 = 1 := by
+  refine ⟨⟨?_, ?_⟩, ⟨?_, ?_⟩, ?_⟩
+  · intro i h1 h2; interval_cases i <;> norm_num [shift, stepVal]
+  · norm_num [shift, stepVal]
+  · norm_num [inJ]
+  · norm_num [inJ, succIdx]
+  · norm_num [mult]
+
+/-- Satisfiability + tightness at an **interior site** `i < h`, exercising the other branch of
+`(eq:mvec)`. `h = 3`, `w = 5`, `x = (1,0,0)`, `θ = (0,1,0)`; endpoint `(1,1,0) ∈ R`,
+`1 ∈ J(θ)`, and `m_1(x) = x_1 - x_2 = 1` exactly. -/
+example : Mem 3 (5 : ℤ) (shift (fun i => if i = 1 then (1 : ℤ) else 0) (fun i => decide (i = 2)))
+    ∧ inJ 3 (fun i => decide (i = 2)) 1
+    ∧ mult 3 (5 : ℤ) (fun i => if i = 1 then (1 : ℤ) else 0) 1 = 1 := by
+  refine ⟨⟨?_, ?_⟩, ⟨?_, ?_⟩, ?_⟩
+  · intro i h1 h2; interval_cases i <;> norm_num [shift, stepVal]
+  · norm_num [shift, stepVal]
+  · norm_num [inJ]
+  · norm_num [inJ, succIdx]
+  · norm_num [mult]
+
+/-- **Ablation: the `J` hypothesis is load-bearing.** At `h = 2`, `w = 2`, `x = (0,0)` the
+region condition holds, yet `m_1(x) = 0`. So `mult_nonneg`'s bound `0 ≤ m_i` is sharp and
+cannot be improved to `1 ≤ m_i` from membership of `R` alone — the upgrade in
+`one_le_mult_of_mem_J` comes from `i ∈ J(θ)`, not from the region. -/
+example : Mem 2 (2 : ℤ) (fun _ => 0) ∧ mult 2 (2 : ℤ) (fun _ => 0) 1 = 0 := by
+  refine ⟨⟨?_, ?_⟩, ?_⟩
+  · intro i h1 h2; norm_num
+  · norm_num
+  · norm_num [mult]
+
+end Gap3

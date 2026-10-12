@@ -21,6 +21,7 @@ import TworowD4Kernel.PrefixSignSum
 import TworowD4Kernel.QuantumInteger
 import TworowD4Kernel.ReciprocityCertificate
 import TworowD4Kernel.ReciprocityFamily
+import TworowD4Kernel.RegionMultiplicity
 import TworowD4Kernel.RibbonTranspose
 import TworowD4Kernel.RobinHood
 import TworowD4Kernel.RootMultiplicityProduct
