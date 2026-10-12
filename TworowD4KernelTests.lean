@@ -594,3 +594,53 @@ section NonCyclotomicRoot
 #guard decide ((-1 : ℤ) ^ 4 - (-1 : ℤ) ^ 3 + 1 > 0)
 
 end NonCyclotomicRoot
+
+/-! ## `RootMultiplicityProduct` — gap 1 of `cyclic-ascent-lemma`
+
+Shadows `Polynomial.rootMultiplicity_prod_one_sub_X_pow_of_one_le` and its ablation
+`Polynomial.rootMultiplicity_prod_one_sub_X_pow_eq_zero`.
+
+The first two checks are an **independent mechanism**: the explicit factorisation
+`(1-t²)(1-t³) = (t-1)²(t³+2t²+2t+1)` verified by `ring`, with the cofactor evaluating to
+`6 ≠ 0` at `t = 1`. Together they pin `ord_{t=1} = 2` exactly *without* using the theorem,
+so the agreement with `J.card = 2` below is two mechanisms, not one read twice.
+
+`open Polynomial` is required: this file does not open it, and `autoImplicit` silently turns a
+bare `X` into a *universally quantified variable*, under which the `ring` check below holds
+generically in any commutative ring and says nothing about `Polynomial.X`. It passed that way
+before this line was added. -/
+
+open Polynomial
+
+example : ((1 - X ^ 2 : ℚ[X]) * (1 - X ^ 3)) = (X - 1) ^ 2 * (X ^ 3 + 2 * X ^ 2 + 2 * X + 1) := by
+  ring
+
+example : Polynomial.eval (1 : ℚ) (X ^ 3 + 2 * X ^ 2 + 2 * X + 1 : ℚ[X]) = 6 := by norm_num
+
+-- `J.card ∈ {0, 1, 2, 3}` with `m ∈ {1, 2, 3}`; the printed value is the cardinality.
+example :
+    Polynomial.rootMultiplicity (1 : ℚ)
+      (∏ i ∈ (∅ : Finset (Fin 2)), (1 - X ^ (![2, 3] i))) = 0 := by
+  rw [Polynomial.rootMultiplicity_prod_one_sub_X_pow_of_one_le _ _ (by decide)]; simp
+
+example :
+    Polynomial.rootMultiplicity (1 : ℚ)
+      (∏ i ∈ (univ : Finset (Fin 1)), (1 - X ^ (![1] i))) = 1 := by
+  rw [Polynomial.rootMultiplicity_prod_one_sub_X_pow_of_one_le _ _ (by decide)]; simp
+
+example :
+    Polynomial.rootMultiplicity (1 : ℚ)
+      (∏ i ∈ (univ : Finset (Fin 2)), (1 - X ^ (![2, 3] i))) = 2 := by
+  rw [Polynomial.rootMultiplicity_prod_one_sub_X_pow_of_one_le _ _ (by decide)]; simp
+
+example :
+    Polynomial.rootMultiplicity (1 : ℚ)
+      (∏ i ∈ (univ : Finset (Fin 3)), (1 - X ^ (![1, 2, 3] i))) = 3 := by
+  rw [Polynomial.rootMultiplicity_prod_one_sub_X_pow_of_one_le _ _ (by decide)]; simp
+
+/-- **Ablation.** `m = (0, 3)` with `J.card = 2`: a single zero multiplicity collapses the
+count from `2` to `0`. This is the executable witness that `1 ≤ m i` (gap 3) is load-bearing. -/
+example :
+    Polynomial.rootMultiplicity (1 : ℚ)
+      (∏ i ∈ (univ : Finset (Fin 2)), (1 - X ^ (![0, 3] i))) = 0 := by
+  rw [Polynomial.rootMultiplicity_prod_one_sub_X_pow_eq_zero _ _ ⟨0, by decide, by decide⟩]
