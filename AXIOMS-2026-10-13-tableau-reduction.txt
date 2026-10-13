@@ -1,0 +1,78 @@
+'TworowD4Kernel.TableauReduction.boxCount' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TworowD4Kernel.TableauReduction.boxCount_eq_sum' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TworowD4Kernel.TableauReduction.eq_unitVector_of_boxCount_one' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'TworowD4Kernel.TableauReduction.unitVector_injective' depends on axioms: [propext]
+'TworowD4Kernel.TableauReduction.card_J_of_boxCount_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TworowD4Kernel.TableauReduction.ascentSet_of_boxCount_one' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TworowD4Kernel.TableauReduction.nu' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TworowD4Kernel.TableauReduction.nu_eq_of_content_ones' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TworowD4Kernel.TableauReduction.Tableau' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TworowD4Kernel.TableauReduction.Tableau.mem_shift' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TworowD4Kernel.TableauReduction.Tableau.Psi' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TworowD4Kernel.TableauReduction.Tableau.nuT' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TworowD4Kernel.TableauReduction.Tableau.nuT_eq' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TworowD4Kernel.TableauReduction.Tableau.Psi_eq_sigma_prod' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TworowD4Kernel.TableauReduction.Tableau.rootMultiplicity_Psi' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'TworowD4Kernel.TableauReduction.Tableau.rootMultiplicity_Psi_eq_nuT' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'TworowD4Kernel.TableauReduction.witOcc' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TworowD4Kernel.TableauReduction.witX' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TworowD4Kernel.TableauReduction.witOcc_boxCount' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TworowD4Kernel.TableauReduction.wit' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TworowD4Kernel.TableauReduction.wit_nuT' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TworowD4Kernel.TableauReduction.wit_natJ' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TworowD4Kernel.TableauReduction.wit_multNat' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TworowD4Kernel.TableauReduction.wit_Psi' depends on axioms: [propext, Classical.choice, Quot.sound]
+'TworowD4Kernel.TableauReduction.wit_rootMultiplicity' depends on axioms: [propext, Classical.choice, Quot.sound]
+/tmp/axprobe.lean:29:14: error(lean.unknownIdentifier): Unknown constant `TworowD4Kernel.TableauReduction.rootMultiplicity_Psi_eq_nuT_GENERAL`
+/tmp/axprobe.lean:31:14: error(lean.unknownIdentifier): Unknown constant `TworowD4Kernel.TableauReduction.wit_rootMultiplicity_FABRICATED`
+PROBE_EXIT=1
+
+==============================================================
+APPENDIX — NEGATIVE CONTROL (plant B): a `sorry` planted at
+TworowD4Kernel.TableauReduction.eq_unitVector_of_boxCount_one
+(the dependency root).  Run 2026-10-13, same probe file.
+Records parsed by the "'<name>' depends on axioms: [...]" pattern,
+NOT by line: records wrap across up to three lines.
+==============================================================
+records: 25   CONTAMINATED: 8   SPARED: 17
+
+CONTAMINATED (sorryAx present):
+   Tableau.nuT_eq
+   Tableau.rootMultiplicity_Psi
+   Tableau.rootMultiplicity_Psi_eq_nuT
+   ascentSet_of_boxCount_one
+   card_J_of_boxCount_one
+   eq_unitVector_of_boxCount_one
+   nu_eq_of_content_ones
+   wit_rootMultiplicity
+
+SPARED:
+   Tableau
+   Tableau.Psi
+   Tableau.Psi_eq_sigma_prod
+   Tableau.mem_shift
+   Tableau.nuT
+   boxCount
+   boxCount_eq_sum
+   nu
+   unitVector_injective
+   wit
+   witOcc
+   witOcc_boxCount
+   witX
+   wit_Psi
+   wit_multNat
+   wit_natJ
+   wit_nuT
+
+Note: wit_rootMultiplicity -- the NON-VACUITY CONTROL -- IS contaminated,
+so the plant tested the control (10-13 c2 plant spared it).  wit_nuT and
+wit_Psi are spared because they are kernel computations (decide / norm_num)
+that do not route through the reduction: independent corroboration of the
+same two numbers, nu = 1 and Psi = 1 - X^2.
