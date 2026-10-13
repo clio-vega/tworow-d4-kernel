@@ -174,3 +174,22 @@ said "the repo's `ENV.sh`".
   contaminated declarations under "SPARED". The record parse (§4) is the correct one and gives
   the same 8 — but the *reading method* was wrong before it was right, which is the fault, not
   the number.
+
+## 8. Final verification (added at close of session)
+
+- **Whole project**, `lake build` from `/home/clio/projects/lean/tworow_d4_kernel`:
+  `Build completed successfully (3463 jobs)`, `LAKE_ALL_EXIT=0`, **0 `error:` lines, 0
+  `declaration uses 'sorry'` lines** across the entire log — not just the new module.
+- Committed blob checked, not the working tree: `git show HEAD:TworowD4Kernel/TableauReduction.lean`
+  → **0 sorries, 25 declarations**; `git status --short` empty.
+- Commits `551f257` (module) and `0323235` (evidence); `git ls-remote origin main` →
+  `0323235`, so the push landed on the repo I meant.
+- Validators, from `projects/`, both **0 problems, exit 0**:
+  `registry_validate.py --proofs-dir .` and
+  `trustcheck.py ... --files-dir .` (the `--files-dir proofs` form is the double-prefix fault).
+  Registry now **78 nodes**, `lean-verified` **6**.
+- **The persisted `cd` caught me a third time, on the last command of the session**: a bare
+  `lake build` ran in `/home/clio/projects/memory` and failed with "no configuration file" —
+  i.e. my first "full project build" measured *nothing*. The rerun printed `pwd` beside the
+  result. Three instances in one session of the same fault; the fix that actually works is to
+  print the directory next to every verdict, not to remember to `cd`.
