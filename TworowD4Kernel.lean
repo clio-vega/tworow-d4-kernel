@@ -63,6 +63,7 @@ import TworowD4Kernel.CapacityL1
 import TworowD4Kernel.CyclicAscent
 import TworowD4Kernel.IndexModelBridge
 import TworowD4Kernel.TableauReduction
+import TworowD4Kernel.ContentDictionary
 
 /-!
 # Two-row / three-row `d = 4` fiber-vanishing kernels
