@@ -1,0 +1,14 @@
+{
+ "id": "jump-equals-pair-deletion",
+ "trust": "lean-verified",
+ "role": "premise",
+ "statement": "LEMMA. For nu>=lambda, nu>=mu: there exists a pair {a,b} subset nu with nu\\{a,b} >= lambda and nu\\{a,b} >= mu  <=>  |nu| - max(|lambda|,|mu|) >= 2. Forward by cardinality; backward by deleting the two SMALLEST elements of nu, which leaves the top max(|lambda|,|mu|) elements untouched because Motegi's order compares only the top r. This is WHERE THE max COMES FROM: a pole needs the deleted pair to dominate BOTH lambda and mu, an 'and' whose negation is the 'or' that makes the criterion read min(|nu|-|lambda|,|nu|-|mu|)<=1.",
+ "file": "proofs/2026-10-16-Q488-korepin-locus.tex",
+ "children": [],
+ "approach": "Pure combinatorics on Motegi's shifted-dominance order: forward by cardinality, backward by deleting the two SMALLEST elements of nu, which leaves the compared top-r window untouched.",
+ "lean": "TworowD4Kernel.Motegi.lem_comb",
+ "lean_repo": "clio-vega/tworow-d4-kernel",
+ "lean_file": "TworowD4Kernel/MotegiOrder.lean",
+ "lean_commit": "147a44c",
+ "lean_note": "LEAN 2026-10-17 c1. Sorry-free; 20 declarations, 20 #print axioms records, standard three only, sorry-scan given a positive control (planted sorry fired). Motegi's order MLe is defined in his own INCREASING enumeration (arXiv:2610.15344 Thm 2.6(i)); the 'top r elements' reading is the theorem MLe_iff_desc, proved against an independently constructed decreasing enumeration, so the definition is checked against a different characterisation than the one it was coded from. Key lemma asc_erase_two: in the ascending convention, deleting the two smallest elements is a cons-strip at the FRONT, closed by rfl. SURVIVING LESION: (a)=>(b) needs NEITHER order hypothesis -- now lem_comb_forward, a free strengthening of the tex statement. Caveat recorded: the other five lesions only show the hypotheses are referenced by the proof SCRIPT (all failed with Unknown identifier), not that the theorem needs them; the necessity of hl is witnessed informally by nu={1,2,3,4}, lambda={9}, mu=0 and is NOT formalised. Cardinality clause stated as max+2 <= |nu| to avoid truncated Nat subtraction; lem_comb_sub proves it equals the tex form using hl,hm. Writeup: proofs/2026-10-17-lean-lem-comb.md"
+}
