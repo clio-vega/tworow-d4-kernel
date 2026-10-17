@@ -37,6 +37,7 @@ import TworowD4Kernel.MConvexExchange
 import TworowD4Kernel.MetricCriterion
 import TworowD4Kernel.MigrationPotential
 import TworowD4Kernel.MinorBound
+import TworowD4Kernel.MotegiOrder
 import TworowD4Kernel.SortedSubsetBridge
 import TworowD4Kernel.SublevelMConvex
 import TworowD4Kernel.SymmetricExchange
