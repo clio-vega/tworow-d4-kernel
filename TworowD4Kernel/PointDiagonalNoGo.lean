@@ -230,8 +230,9 @@ theorem konckiFamily_of_ne (a b : L) (c : K) {x : L} (hx : x ≠ a) :
 /-- The transvection really does change the `a` coordinate, provided only `c ≠ 0`.
 
 The hypothesis `a ≠ b` was **lesioned away** (2026-10-18): the `a = b` branch collapses to
-`(1 + c) • std a ≠ std a`, which `c ≠ 0` already gives. A surviving lesion is a stronger
-theorem for free. Contrast `konckiFamily_not_diagonal`, where `a ≠ b` is **irremovable** —
+`(1 + c) • std a ≠ std a`, which `c ≠ 0` already gives. A surviving lesion is a
+stronger theorem for free. Contrast `konckiFamily_not_diagonal`, where `a ≠ b` is
+**irremovable** —
 at `a = b` the transvection *is* diagonal, with scaling `1 + c`. The two lesions of the same
 binder land on opposite sides, which is what makes `a ≠ b` the sharp hypothesis there. -/
 theorem konckiFamily_ne_std {a b : L} {c : K} (hc : c ≠ 0) :

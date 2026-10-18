@@ -103,19 +103,36 @@ Four guards, each installed because a previous session was fooled without it.
 2. **DECL_COUNT is asserted against RECORD_COUNT** inside the audit, with `logError` if
    they differ. Both read 29. An empty audit file and a clean one grep identically, so
    the count is the evidence, never the absence of a flag.
-3. **Positive control: the plant fired.** Three declarations in a `Q515Plant` namespace,
+3. **Positive control: the plant fired.** Three declarations in a `PointDiagonalPlant` namespace,
    audited by the *same* function over a second domain. `no_single_cell_move_plant`
    (the no-go with its proof deleted) fired `sorryAx`; `no_single_cell_move_pair_plant`,
    which *uses* plant 1 and has no `sorry` of its own, **also** fired — so the scan sees
    propagation through the proof term, not just a direct `sorry`. The third,
    `clean_control`, was correctly **spared**, so the audit is reporting contamination and
    not the domain. PLANT-SORRYAX_RECORDS 2 of 3.
+### The source regex was wrong in both directions — which is why the audit is env-based
+
+Cross-checking the environment count against a source regex found the regex wrong **twice,
+in opposite directions**:
+
+- it **missed 2** declarations — the auto-generated `konckiFamily.congr_simp` and
+  `std.congr_simp`, which exist in the environment and have axiom dependencies but appear
+  nowhere in the file;
+- it **invented 1** — a wrapped docstring line that happened to begin with the word
+  `theorem`, giving 28 for 27.
+
+The two errors nearly cancelled (28 vs 27), so comparing the two *totals* would have read
+as a one-off typo rather than as two independent faults. ⇒ **enumerate from the
+environment and compare the record SET, never the count.** The docstring has been
+rewrapped so the file no longer carries the tripwire; the regex and the environment now
+agree at 27 hand-written declarations.
+
 4. **The build is an elaboration, not a replay.** `lake build` exit 0 can be a trace-hash
-   match, and `touch` does **not** force re-elaboration. The olean was **deleted** twice
-   and its mtime confirmed to move each time: `1792312540 → 1792312558` (first build) and
-   `→ 1792313267` (after the strengthening). Whole-project build: **3469 jobs green,
-   551 s**, with the new module imported from the root at `TworowD4Kernel.lean:72` so CI
-   builds it.
+   match, and `touch` does **not** force re-elaboration. The olean was **deleted** three times
+   and its mtime confirmed to move each time: `1792312540 → 1792312558` (first build),
+   `→ 1792313267` (after the strengthening), `→ 1792313490` (after the docstring rewrap).
+   Whole-project build: **3469 jobs green, 551 s**, with the new module imported from the
+   root at `TworowD4Kernel.lean:72` so CI builds it.
 
 ## Lesions — recorded as compiled counterexamples, not as build failures
 
