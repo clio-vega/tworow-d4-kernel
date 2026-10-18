@@ -177,3 +177,42 @@ about a transvection in label space. In particular:
 - **The parents are not promoted.** The mechanism gap stands: `ρ`'s numerator `(1-q)²`
   comes from the bulk factor and contains no `K`-matrix. Promoting a parent would convert
   a named gap into a certificate.
+
+## Artifacts
+
+| file | repo | content |
+|---|---|---|
+| `TworowD4Kernel/PointDiagonalNoGo.lean` | `clio-vega/tworow-d4-kernel`, commit `908a597` | the module, 27 declarations, sorry-free |
+| `TworowD4Kernel.lean:72` | same | root import, so CI builds it |
+| `proofs/2026-10-18-lean-point-diagonal-audit.lean` | `clio-vega/proofs` | environment-enumerated axiom audit + the 3-declaration plant |
+| `proofs/2026-10-18-lean-point-diagonal-axioms.txt` | same | the audit's 40 output lines, both domains |
+| `proofs/2026-10-18-lean-point-diagonal-lesions.lean` | same | the 11 lesions as compiled counterexamples |
+
+Push verified as a **two-way set difference** (`git log origin/main..HEAD` and
+`HEAD..origin/main` both empty), not by reading a "pushed" line — a `git add` inside an
+`&&` chain once failed while the next line printed "pushed" having pushed the *previous*
+commit.
+
+## Registry
+
+Four new children under `coboundary-and-removable-poles` in
+`proofs/registry/motegi-typeBC-multiplication.json`, each `lean-verified` with an explicit
+`scope` clause:
+
+- `psi-determined-by-singletons-lean` → `psi_prod_eq_prod_singletons`
+- `point-diagonal-no-go-lean` → `no_point_diagonal_moves_exactly_a_pair`
+- `transposition-invariance-is-shape-only-lean` → `transposition_invariance_on_diagonal`
+- `offdiagonal-moves-one-cell-lean` → `offdiagonal_can_move_one_cell`
+
+**The parent's trust is unchanged at `proved`.** `registry_validate.py --proofs-dir .`
+reports `OK ... (status: proved)` with 7 warnings, all pre-existing `sources.json`
+index misses; the one warning my nodes introduced (an email UID is not an arXiv source id)
+was fixed by moving that provenance into the node's `statement` text, where it belongs.
+
+## What I would do next
+
+The brief's five statements are closed. The open thread this leaves is **Q513**: the
+no-go says the point-diagonal family is the whole admissible family *and* that it cannot
+reach Koncki's class, so the remaining freedom after the three lattice equalities is
+exactly the off-diagonal part — and part 5 is now a machine-checked statement that that
+part is non-empty. Counting it is the gate Q513 already names.
