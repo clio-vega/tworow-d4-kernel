@@ -69,6 +69,7 @@ import TworowD4Kernel.TableauReduction
 import TworowD4Kernel.CollapseMultiplier
 import TworowD4Kernel.ContentDictionary
 import TworowD4Kernel.RegionCondition
+import TworowD4Kernel.PointDiagonalNoGo
 
 /-!
 # Two-row / three-row `d = 4` fiber-vanishing kernels
