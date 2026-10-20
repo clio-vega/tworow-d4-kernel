@@ -73,6 +73,7 @@ import TworowD4Kernel.ContentDictionary
 import TworowD4Kernel.RegionCondition
 import TworowD4Kernel.PointDiagonalNoGo
 import TworowD4Kernel.HeadExclusionRootsOfUnity
+import TworowD4Kernel.TypeDependenceLocus
 
 /-!
 # Two-row / three-row `d = 4` fiber-vanishing kernels
