@@ -303,6 +303,20 @@ end Types
 
 /-! ### Lesion register for the core lemmas -/
 
+/-- **`L ⊆ K` is irremovable from `sdiff_sdiff_cancel` as well**, and this is a separate
+measurement from `prod_c_assemble_needs_hLK` below: the same binder occurs in two
+theorems, and a lesion in one says nothing about the other (a binder has come back
+removable from one theorem and irremovable from its neighbour before).
+
+The docstring of `sdiff_sdiff_cancel` asserts "`L ⊆ K` is used and `K ⊆ M` is *not*".
+The second half of that is witnessed by the statement itself — `K ⊆ M` is not a binder
+there. The first half was, until now, only a claim in prose; this is the witness.
+Take `L = {0}`, `K = ∅`, `M = {0}`: then `(M \ L) \ (K \ L) = ∅` while `M \ K = {0}`. -/
+theorem sdiff_sdiff_cancel_needs_hLK :
+    ∃ (K L M : Finset (Fin 2)), ¬ L ⊆ K ∧ (M \ L) \ (K \ L) ≠ M \ K := by
+  refine ⟨∅, {0}, {0}, by simp, ?_⟩
+  decide
+
 /-- `L ⊆ K` is irremovable from `prod_c_assemble`: take `L = {0}`, `K = ∅`, `M = {0}`,
 `c ≡ 2`. Then `K ⊆ M` holds, the left side is `2` and the right side is `1`. -/
 theorem prod_c_assemble_needs_hLK :
