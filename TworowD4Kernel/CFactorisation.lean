@@ -59,8 +59,11 @@ that G5 holds.
 * No invertibility of `c` for the factorisation itself. Units are needed only for
   the `↔` of `T_delta_iff`, exactly as one would hope.
 
-Reference: `arXiv:2409.06217` (Motegi), `lem:allcard-Bhat-product` L4666,
-`prop:allcard-Bhat-inverse` L4910, `thm:BC-all-cardinality-biorthogonality`.
+Reference: K. Motegi, *Type B- and C- trigonometric weight functions*,
+`arXiv:2610.15344` (LaTeX source line numbers below, as in
+`projects/proofs/2026-10-20-c2-G5-reduction.tex`):
+`lem:allcard-Bhat-product` L4666; `prop:allcard-Bhat-inverse` statement L4896,
+proof head L4910; `thm:BC-all-cardinality-biorthogonality` ("G5") L4365.
 -/
 
 namespace TworowD4Kernel.CFactorisation
