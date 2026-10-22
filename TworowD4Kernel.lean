@@ -75,6 +75,7 @@ import TworowD4Kernel.PointDiagonalNoGo
 import TworowD4Kernel.HeadExclusionRootsOfUnity
 import TworowD4Kernel.TypeDependenceLocus
 import TworowD4Kernel.CFactorisation
+import TworowD4Kernel.BoundaryTwoTerm
 
 /-!
 # Two-row / three-row `d = 4` fiber-vanishing kernels
