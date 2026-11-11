@@ -32,6 +32,9 @@ rationals, 60 random admissible `M`, signed entries): paper form `60/60`, this e
 paper is right; only the Lean `V` parameter must absorb the shift. The vanishing results in
 `RhoShiftVanishing`/`BoundaryEmptyIndex`/`ReciprocalPair` are unaffected (they never fix `V`).
 
+The paper's literal form (`det(x^{m})` with `m = rhoShiftPaper θ`, literal Vandermonde) is
+`thm_alt_paper`; `thm_alt` is the same fact in the `psiAlt`/`AltExpansion` encoding.
+
 ## Ordering
 
 The paper orders `T` "in increasing index order". Here `ord T` may be **any** bijection
@@ -267,6 +270,101 @@ theorem thm_alt (w : ι → K) (M : Finset ι) (r : ℕ) (θ : Fin r → ℤ)
       exact hh.1 j
     · rw [Finset.card_image_of_injective _ hh.2, Finset.card_univ, Fintype.card_fin]
 
+/-! ## `thm:alt` in the paper's literal form
+
+Same proof, general exponent `e`; at `e = m` (`rhoShiftPaper`, the paper's 1-indexed
+`m_j = θ_j + j − 1`) this is `.tex` L138 verbatim: `det(x_i^{m_j}) / V(T)` with the literal
+Vandermonde `V(T) = ∏_{i<k}(x_k − x_i)`. -/
+
+theorem fibre_sum_general (w : ι → K) (M : Finset ι) {r : ℕ} (e : Fin r → ℤ)
+    (ord : Finset ι → Fin r → ι) (hadm : Admissible w M) (hord : OrdOK M r ord)
+    {T : Finset ι} (hT : T ∈ M.powersetCard r) :
+    ∑ h ∈ (headInjections M r).filter (fun h => Finset.univ.image h = T),
+        (∏ j, w (h j) ^ e j) / vand (fun j => w (h j)) =
+      (Matrix.of fun i j => w (ord T i) ^ e j).det / vand (fun i => w (ord T i)) := by
+  obtain ⟨ho, ho'⟩ := hord T hT
+  obtain ⟨hTM, hTc⟩ := Finset.mem_powersetCard.1 hT
+  have himg : Finset.univ.image (ord T) = T := by
+    refine Finset.eq_of_subset_of_card_le (fun y hy => ?_) ?_
+    · obtain ⟨i, -, rfl⟩ := Finset.mem_image.1 hy
+      exact ho' i
+    · rw [Finset.card_image_of_injective _ ho, Finset.card_univ, Fintype.card_fin, hTc]
+  have hxinj : Function.Injective (fun i => w (ord T i)) := by
+    intro i j e
+    by_contra hne
+    exact hadm.2 _ (hTM (ho' i)) _ (hTM (ho' j)) (ho.ne hne) e
+  have hV := vand_ne_zero hxinj
+  calc _ = ∑ σ : Equiv.Perm (Fin r), (∏ j, w (ord T (σ j)) ^ e j) /
+          vand (fun j => w (ord T (σ j))) := by
+        symm
+        refine Finset.sum_bij (fun σ _ => fun j => ord T (σ j)) ?_ ?_ ?_ (fun _ _ => rfl)
+        · intro σ _
+          simp only [headInjections, Finset.mem_filter, Fintype.mem_piFinset]
+          refine ⟨⟨fun j => hTM (ho' _), ho.comp σ.injective⟩, ?_⟩
+          refine Eq.trans ?_ himg
+          ext y
+          simp only [Finset.mem_image, Finset.mem_univ, true_and]
+          constructor
+          · rintro ⟨j, rfl⟩; exact ⟨σ j, rfl⟩
+          · rintro ⟨i, rfl⟩; exact ⟨σ.symm i, by simp⟩
+        · intro σ _ τ _ e
+          exact Equiv.ext fun j => ho (congrFun e j)
+        · intro g hg
+          simp only [headInjections, Finset.mem_filter, Fintype.mem_piFinset] at hg
+          obtain ⟨⟨-, hginj⟩, hgimg⟩ := hg
+          have hex : ∀ j, ∃ i, ord T i = g j := fun j => by
+            have : g j ∈ Finset.univ.image (ord T) := by
+              rw [himg, ← hgimg]; exact Finset.mem_image_of_mem _ (Finset.mem_univ _)
+            simpa using this
+          choose f hf using hex
+          have hfinj : Function.Injective f := fun j j' e => hginj (by rw [← hf j, ← hf j', e])
+          exact ⟨Equiv.ofBijective f (Finite.injective_iff_bijective.1 hfinj),
+            Finset.mem_univ _, funext fun j => hf j⟩
+    _ = ∑ σ : Equiv.Perm (Fin r), ((Equiv.Perm.sign σ : ℤ) : K) *
+          (∏ j, w (ord T (σ j)) ^ e j) / vand (fun j => w (ord T j)) := by
+        refine Finset.sum_congr rfl fun σ _ => ?_
+        have hv : vand (fun j => w (ord T (σ j))) =
+            ((Equiv.Perm.sign σ : ℤ) : K) * vand (fun j => w (ord T j)) := by
+          have : Matrix.vandermonde (fun j => w (ord T (σ j))) =
+              (Matrix.vandermonde (fun j => w (ord T j))).submatrix σ id := rfl
+          rw [vand, vand, this, Matrix.det_permute]
+        have hs : ((Equiv.Perm.sign σ : ℤ) : K) * ((Equiv.Perm.sign σ : ℤ) : K) = 1 := by
+          rw [← Int.cast_mul, ← Units.val_mul, Int.units_mul_self]; simp
+        have hs0 : ((Equiv.Perm.sign σ : ℤ) : K) ≠ 0 := left_ne_zero_of_mul_eq_one hs
+        rw [hv, div_eq_div_iff (mul_ne_zero hs0 hV) hV]
+        linear_combination (-((∏ j, w (ord T (σ j)) ^ e j) *
+          vand (fun j => w (ord T j)))) * hs
+    _ = _ := by
+        rw [Matrix.det_apply]
+        simp only [div_eq_mul_inv, Finset.sum_mul]
+        refine Finset.sum_congr rfl fun σ _ => ?_
+        rw [Units.smul_def, zsmul_eq_mul]
+        simp only [Matrix.of_apply]
+
+/-- **`thm:alt`, the paper's literal statement** (`.tex` L136–L146): with `m = rhoShiftPaper θ`
+and the literal Vandermonde `vand`, for any bijective ordering `ord` of each `T`. -/
+theorem thm_alt_paper (w : ι → K) (M : Finset ι) (r : ℕ) (θ : Fin r → ℤ)
+    (ord : Finset ι → Fin r → ι) (hadm : Admissible w M) (hord : OrdOK M r ord) :
+    psiHead w M r θ = ∑ T ∈ M.powersetCard r, Bfactor w M T *
+      ((Matrix.of fun i j => w (ord T i) ^ rhoShiftPaper θ j).det /
+        vand (fun i => w (ord T i))) := by
+  rw [rhoShiftPaper_eq, psiHead_eq_sum_headTerm,
+    ← Finset.sum_fiberwise_of_maps_to (g := fun h => Finset.univ.image h)
+      (t := M.powersetCard r) ?maps]
+  · refine Finset.sum_congr rfl fun T hT => ?_
+    rw [← fibre_sum_general w M (fun j => rhoShift θ j + 1) ord hadm hord hT, Finset.mul_sum]
+    refine Finset.sum_congr rfl fun h hh => ?_
+    obtain ⟨hhM, himg⟩ := Finset.mem_filter.1 hh
+    simp only [headInjections, Finset.mem_filter, Fintype.mem_piFinset] at hhM
+    obtain ⟨hmem, hinj⟩ := hhM
+    rw [headTerm_eq w M θ hinj (fun j => hadm.1 _ (hmem j)), himg]
+  · intro h hh
+    simp only [headInjections, Finset.mem_filter, Fintype.mem_piFinset] at hh
+    refine Finset.mem_powersetCard.2 ⟨fun y hy => ?_, ?_⟩
+    · obtain ⟨j, -, rfl⟩ := Finset.mem_image.1 hy
+      exact hh.1 j
+    · rw [Finset.card_image_of_injective _ hh.2, Finset.card_univ, Fintype.card_fin]
+
 /-! ## `thm:red` unconditionally
 
 `ReciprocalRestriction.thm_red_a/b` took `thm:alt` at `M` and at the reduced set as `Prop`
@@ -358,8 +456,9 @@ theorem LV_literal_vandermonde_refutable :
 
 /-! ## Axioms (measured 2026-11-11 c2, `lake env lean` on this file)
 
-`thm_alt`, `thm_red_b_uncond`, `thm_red_a_uncond`, `LV_literal_vandermonde_refutable`,
-`exists_ordOK`: `[propext, Classical.choice, Quot.sound]`. Control in the same invocation:
+`thm_alt`, `thm_alt_paper`, `thm_red_b_uncond`, `thm_red_a_uncond`,
+`LV_literal_vandermonde_refutable`, `exists_ordOK`: `[propext, Classical.choice, Quot.sound]`. Control in the same invocation:
 `theorem bad_control_1111c2 : (1 : ℕ) = 2 := by sorry` printed `[sorryAx]`. -/
 
 end TworowD4Kernel.AlternantExpansion
+
