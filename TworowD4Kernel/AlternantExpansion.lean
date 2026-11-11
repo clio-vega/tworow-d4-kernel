@@ -457,8 +457,9 @@ theorem LV_literal_vandermonde_refutable :
 /-! ## Axioms (measured 2026-11-11 c2, `lake env lean` on this file)
 
 `thm_alt`, `thm_alt_paper`, `thm_red_b_uncond`, `thm_red_a_uncond`,
-`LV_literal_vandermonde_refutable`, `exists_ordOK`: `[propext, Classical.choice, Quot.sound]`. Control in the same invocation:
-`theorem bad_control_1111c2 : (1 : ℕ) = 2 := by sorry` printed `[sorryAx]`. -/
+`LV_literal_vandermonde_refutable`, `exists_ordOK`: `[propext, Classical.choice, Quot.sound]`.
+Control in the same invocation: `theorem bad_control_1111c2 : (1 : ℕ) = 2 := by sorry`
+printed `[sorryAx]` (and again `bad_control_1111c2b` beside `thm_alt_paper`). -/
 
 end TworowD4Kernel.AlternantExpansion
 
