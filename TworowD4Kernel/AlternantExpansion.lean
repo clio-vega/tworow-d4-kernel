@@ -415,6 +415,34 @@ theorem thm_red_a_uncond (M : Finset ι) (r : ℕ) (w : ι → K) (ord : Finset 
   exact thm_red_a M r w w (vandTw w ord) ord θ (thm_alt w M r θ ord hadm hord)
     (thm_alt w _ r θ ord (admissible_mono hsub hadm) (hord.mono hsub)) hadm ha hw
 
+/-! ## Parents unblocked by `thm:alt`
+
+Two earlier modules proved vanishing at the alternant layer (`psiAlt`) and stopped there,
+because the step to the defining sum `eq:Psidef` is `thm:alt`. Composing with `thm_alt`. -/
+
+/-- **`cor:criterion` `⇐` on `eq:Psidef`** (Q559 `.tex`; forward ρ-shift law + boundary):
+if `|M| < r`, or `θ_j − θ_k = k − j` for some `j < k`, then `Ψ(M) = 0`. -/
+theorem psiHead_eq_zero_of_criterion (w : ι → K) (M : Finset ι) (r : ℕ) (θ : Fin r → ℤ)
+    (ord : Finset ι → Fin r → ι) (hadm : Admissible w M) (hord : OrdOK M r ord)
+    (h : M.card < r ∨ ∃ j k : Fin r, j < k ∧ θ j - θ k = (k.val : ℤ) - (j.val : ℤ)) :
+    psiHead w M r θ = 0 := by
+  have hA := thm_alt w M r θ ord hadm hord
+  unfold AltExpansion at hA
+  rw [hA]
+  exact psiAlt_eq_zero_of_criterion M r w _ (vandTw w ord) ord θ h
+
+/-- **`prop:recip` on `eq:Psidef`** (Q565 `.tex` L151–L155): admissible `M`, `w_a w_b = 1`,
+`a ≠ b`, `n ≤ r + 1` ⇒ `Ψ(M) = 0` for every `θ`. -/
+theorem psiHead_eq_zero_of_reciprocal_pair (w : ι → K) (M : Finset ι) (r : ℕ)
+    (ord : Finset ι → Fin r → ι) (hadm : Admissible w M) (hord : OrdOK M r ord) {a b : ι}
+    (hM : M.card ≤ r + 1) (hab : a ≠ b) (ha : a ∈ M) (hb : b ∈ M) (hw : w a * w b = 1) :
+    ∀ θ : Fin r → ℤ, psiHead w M r θ = 0 := by
+  intro θ
+  have hA := thm_alt w M r θ ord hadm hord
+  unfold AltExpansion at hA
+  rw [hA]
+  exact psiAlt_eq_zero_of_reciprocal_pair M r w w (vandTw w ord) ord θ hM hab ha hb hw
+
 /-! ## Lesion LV (pre-registered before this block was built)
 
 Prediction: with the paper's **literal** `V = Vand` in place of `vandTw`, `AltExpansion` is
@@ -457,9 +485,10 @@ theorem LV_literal_vandermonde_refutable :
 /-! ## Axioms (measured 2026-11-11 c2, `lake env lean` on this file)
 
 `thm_alt`, `thm_alt_paper`, `thm_red_b_uncond`, `thm_red_a_uncond`,
-`LV_literal_vandermonde_refutable`, `exists_ordOK`: `[propext, Classical.choice, Quot.sound]`.
+`LV_literal_vandermonde_refutable`, `exists_ordOK`, `psiHead_eq_zero_of_criterion`,
+`psiHead_eq_zero_of_reciprocal_pair`: `[propext, Classical.choice, Quot.sound]`.
 Control in the same invocation: `theorem bad_control_1111c2 : (1 : ℕ) = 2 := by sorry`
-printed `[sorryAx]` (and again `bad_control_1111c2b` beside `thm_alt_paper`). -/
+printed `[sorryAx]` (and again `…c2b`, `…c2c` beside the later declarations). -/
 
 end TworowD4Kernel.AlternantExpansion
 
