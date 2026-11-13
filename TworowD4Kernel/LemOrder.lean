@@ -149,7 +149,9 @@ theorem RegAt0.congr {f g : K → K} (h : ∀ u, f u = g u) (hg : RegAt0 g) : Re
   have : f = g := funext h
   rwa [this]
 
-/-! ## `H` and `G` are regular at `0` (a theorem, replacing the blocks' "read off the definition") -/
+/-! ## `H` and `G` are regular at `0`
+
+A theorem, replacing the blocks' "read off the definition". -/
 
 variable {ι : Type*} [DecidableEq ι]
 
@@ -175,7 +177,8 @@ theorem regAt0_hBlock (w : ι → K) (M : Finset ι) (n : ι) (k : ℕ) (θ : Fi
   simp only [hBlock]
   refine regAt0_sum _ _ fun T' _ => ?_
   refine RegAt0.congr (fun u => ?_)
-    ((((regAt0_const (Bfactor w (M.erase n) T')).mul (regAt0_betaReg w (M.erase n) T')).mul (regAt0_lapReg w ord' θ js T')).div_const
+    ((((regAt0_const (Bfactor w (M.erase n) T')).mul (regAt0_betaReg w (M.erase n) T')).mul
+      (regAt0_lapReg w ord' θ js T')).div_const
       (vand fun i => w (ord' T' i)) |>.div_poly (∏ i, (1 - X * C (w (ord' T' i))))
       (by simp [eval_prod]))
   simp only [eval_prod, eval_one_sub_X_mul, div_mul_eq_div_div]
@@ -252,7 +255,8 @@ theorem regAt0_orderF (w : ι → K) (M : Finset ι) (n : ι) (k : ℕ) (θ : Fi
     (((regAt0_const _).mul (regAt0_id.pow _)).mul (regAt0_gBlock w M n (k + 1) θ ord))
 
 /-- **The identity** `u^{m*−k} Ψ = F(u)` at `w_n = u⁻¹`
-(`psiHead_split` + `lem:blockA` (I) + `lem:blockB` (I)). The hypothesis `m* ≥ 0` is used only to write
+(`psiHead_split` + `lem:blockA` (I) + `lem:blockB` (I)). The hypothesis `m* ≥ 0` is used only
+to write
 `u^{m*+1}` with a natural exponent. -/
 theorem psiHead_order_identity (w : ι → K) (M : Finset ι) {n : ι} (k : ℕ) (θ : Fin (k + 1) → ℤ)
     (ord : Finset ι → Fin (k + 1) → ι) (ord' : Finset ι → Fin k → ι) (js : Fin (k + 1))
@@ -270,7 +274,8 @@ theorem psiHead_order_identity (w : ι → K) (M : Finset ι) {n : ι} (k : ℕ)
   rw [psiHead_split w M n (k + 1) θ ord hadm hord, orderF, mul_add, h1, h2, neg_pow]
   linear_combination (-1) ^ (k + 1) * gBlock w M n (k + 1) θ ord u * h3
 
-/-- **Where `max m ≥ 0` enters:** the `G`-term carries `u^{m*+1}`, `m*+1 ≥ 1`, so vanishes at `0`. -/
+/-- **Where `max m ≥ 0` enters:** the `G`-term carries `u^{m*+1}`, `m*+1 ≥ 1`, so it vanishes
+at `0`. -/
 theorem orderF_zero (w : ι → K) (M : Finset ι) (n : ι) (k : ℕ) (θ : Fin (k + 1) → ℤ)
     (js : Fin (k + 1)) (ord : Finset ι → Fin (k + 1) → ι) (ord' : Finset ι → Fin k → ι)
     (hpos : 0 ≤ rhoShiftPaper θ js) :
