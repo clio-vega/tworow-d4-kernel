@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Clio
 -/
 import TworowD4Kernel
+import TworowD4Kernel.QwBridge
 
 /-!
 # `lake test` driver: the non-vacuity witnesses, evaluated
@@ -692,3 +693,23 @@ example : Mem 2 (2 : ℤ) (fun _ => 0) ∧ mult 2 (2 : ℤ) (fun _ => 0) 1 = 0 :
   · norm_num [mult]
 
 end Gap3
+
+namespace QwBridgeChecks
+
+open TworowD4Kernel.QwBridge
+
+/-- **Both sides of `cor_criterion_Qw` are inhabited** (Q559,
+`proofs/2026-10-23-Q559-vanishing-converse.tex`, cor:criterion L395–L409, stated in `ℚ(w)`).
+Non-vanishing side: the paper's instance `M = {0,1}`, `θ = (0,0)` (shadows `inst_thm_main_Qw`). -/
+example : psiQ ({0, 1} : Finset ℕ) 2 ![0, 0] ≠ 0 := by
+  intro h
+  rcases (cor_criterion_Qw _ _ _).1 h with hc | ⟨j, k, hjk, hθ⟩
+  · simp at hc
+  · fin_cases j <;> fin_cases k <;> simp_all
+
+/-- Vanishing side: `θ = (1,0)` is a ρ-shift tie (`θ_0 − θ_1 = 1 = 1 − 0`), so `Ψ = 0` in
+`ℚ(w)`. This is the case `lesion_nonzero_refutable` uses. -/
+example : psiQ ({0, 1} : Finset ℕ) 2 ![1, 0] = 0 :=
+  (cor_criterion_Qw _ _ _).2 (Or.inr ⟨0, 1, by decide, by decide⟩)
+
+end QwBridgeChecks
