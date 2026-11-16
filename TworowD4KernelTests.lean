@@ -713,3 +713,28 @@ example : psiQ ({0, 1} : Finset ℕ) 2 ![1, 0] = 0 :=
   (cor_criterion_Qw _ _ _).2 (Or.inr ⟨0, 1, by decide, by decide⟩)
 
 end QwBridgeChecks
+
+
+section GrowthConfluence
+
+open TworowD4Kernel.GrowthConfluence
+
+-- Shadows `control_two_orders_agree`: step-blind rule, both orders agree on the 2×2 grid.
+#guard decide
+  (snap 4 (run (fun _ a b c => a + 2 * b + 3 * c + 1 : ℕ → ℕ → ℕ → ℕ → ℕ) 0 ordA
+      (initWord 2 2, fun t => t)) =
+    snap 4 (run (fun _ a b c => a + 2 * b + 3 * c + 1) 0 ordB (initWord 2 2, fun t => t)))
+
+-- Shadows `lesion_step_indexed`: a step-indexed rule separates the two orders.
+#guard decide
+  (snap 4 (run (fun s _ _ _ => s : ℕ → ℕ → ℕ → ℕ → ℕ) 0 ordA (initWord 2 2, fun _ => 0)) ≠
+    snap 4 (run (fun s _ _ _ => s : ℕ → ℕ → ℕ → ℕ → ℕ) 0 ordB (initWord 2 2, fun _ => 0)))
+
+-- Shadows `lesion_unflip`.
+#guard decide
+  (snap 2 (run (fun _ _ b _ => b + 1 : ℕ → ℕ → ℕ → ℕ → ℕ) 0 [(false, 0)]
+      (initWord 1 1, fun _ => 0)) ≠
+    snap 2 (run (fun _ _ b _ => b + 1 : ℕ → ℕ → ℕ → ℕ → ℕ) 0 [(false, 0), (true, 0), (false, 0)]
+      (initWord 1 1, fun _ => 0)))
+
+end GrowthConfluence
