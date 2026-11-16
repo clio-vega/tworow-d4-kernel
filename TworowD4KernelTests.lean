@@ -738,3 +738,20 @@ open TworowD4Kernel.GrowthConfluence
       (initWord 1 1, fun _ => 0)))
 
 end GrowthConfluence
+
+
+section SlideSwitch
+
+open TworowD4Kernel.SlideSwitch
+
+-- Tier B at |ν| ≤ 6 (495 instances). `#guard` is EVALUATION, not proof; the kernel-checked
+-- statement stops at |ν| ≤ 5 (`slide_eq_switch_product_le5`).
+#guard slideCheck 6
+-- The sample is not vacuous: the hole moves in 380 of the 495 instances and some step sees
+-- both an east and a north neighbour in 178 of them (counts printed in session 2026-11-16 c2).
+#guard (instances 6 (stdFill 6)).length = 495
+-- Lesion 1 (larger of east/north) and lesion 2 (non-standard F) fail at every size tried.
+#guard !slideCheck 6 false
+#guard !slideCheck 4 true (anyFill 4)
+
+end SlideSwitch
