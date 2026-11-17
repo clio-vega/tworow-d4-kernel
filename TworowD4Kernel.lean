@@ -81,6 +81,7 @@ import TworowD4Kernel.BoundaryEmptyIndex
 import TworowD4Kernel.GrowthConfluence
 import TworowD4Kernel.SlideSwitch
 import TworowD4Kernel.SlideSwitchGeneral
+import TworowD4Kernel.SlideSwitchReverse
 
 /-!
 # Two-row / three-row `d = 4` fiber-vanishing kernels
