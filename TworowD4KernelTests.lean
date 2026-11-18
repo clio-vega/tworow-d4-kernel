@@ -755,3 +755,19 @@ open TworowD4Kernel.SlideSwitch
 #guard !slideCheck 4 true (anyFill 4)
 
 end SlideSwitch
+
+
+section LemmaD
+
+open TworowD4Kernel.LemmaD TworowD4Kernel.GrowthConfluence TworowD4Kernel.SlideSwitch
+
+-- G4 lem:D, switch form. `lemmaDCheck_true` proves the check for every N from the general
+-- theorem; these `#guard`s are an independent EVALUATION of the definitions (no theorem used).
+#guard (ldInst 5).length = 231
+#guard lemmaDCheck 5
+-- Not vacuous: the rows product changes the chain on 120 of the 231 instances.
+#guard nontrivCount 5 = 120
+-- Lesion (order): `[1,2,0,0]` does not reach `F^2 U^2`.
+#guard (swSeq [1, 2, 0, 0] (initWord 2 2, phi (chainOf ∅ exW))).1 != finalWord 2 2
+
+end LemmaD
