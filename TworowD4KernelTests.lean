@@ -771,3 +771,19 @@ open TworowD4Kernel.LemmaD TworowD4Kernel.GrowthConfluence TworowD4Kernel.SlideS
 #guard (swSeq [1, 2, 0, 0] (initWord 2 2, phi (chainOf ∅ exW))).1 != finalWord 2 2
 
 end LemmaD
+
+section SlideIteration
+
+open TworowD4Kernel.LemmaD TworowD4Kernel.SlideSwitch TworowD4Kernel.SlideIteration
+  TworowD4Kernel.GrowthConfluence
+
+-- G4 lem:D, slide form (`lemmaD_slides`). Independent EVALUATION: the iterated forward slides
+-- (`rowsW`, Σ) and iterated reverse slides (`colsW`, outward) give the same cell WORD on all 231
+-- instances with |ν| ≤ 5 (the theorem states chain equality; word equality is the evaluation).
+#guard ((ldInst 5).filter fun ⟨m, p, w⟩ => rowsW p m w != colsW m 0 p w).length = 0
+-- Not vacuous: Σ moves the filling on 120 of 231 instances.
+#guard ((ldInst 5).filter fun ⟨m, p, w⟩ => rowsW p m w != w).length = 120
+-- Lesion (`lesion_window_shift`): the window shifted right by one is a no-op on the example.
+#guard (swSeq [2] ([Dir.D, Dir.D, Dir.R], phi (chainOf ∅ exCells))).1 = [Dir.D, Dir.D, Dir.R]
+
+end SlideIteration
