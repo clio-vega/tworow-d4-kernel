@@ -808,3 +808,18 @@ open TworowD4Kernel.SlideSwitch TworowD4Kernel.StdSlide
 #guard tildeTypo 1 2 rowS oneX (0, 0) = 1
 
 end StdSlide
+
+section StdSlideBridge
+
+open TworowD4Kernel.SlideSwitch TworowD4Kernel.StdSlide TworowD4Kernel.StdSlideBridge
+
+-- Non-vacuity of `jdt_bridge`: a two-move forward slide (east then north), both sides agree.
+#guard (jdt true 3 [(0, 1), (1, 1), (1, 0)] (0, 0)).2 = (1, 1)
+#guard (slide fwdRule 3 ([(0, 1), (1, 1), (1, 0)] : List Cell).toFinset
+    (valOf [(0, 1), (1, 1), (1, 0)]) (0, 0)).2.2.2 = [(0, 1), (1, 1)]
+-- Shadows `lesion_reverse_order` and `lesion_reverse_word_increasing`.
+#guard fwdChoice ([(1, 0), (0, 1)] : List Cell).toFinset (valRev [(1, 0), (0, 1)]) (0, 0) = some (0, 1)
+#guard revChoice ([(1, 0), (0, 1)] : List Cell).toFinset (valOf [(1, 0), (0, 1)]) (1, 1) = some (0, 1)
+#guard (jdtStepRev true [(1, 0), (0, 1)] (1, 1)).map Prod.snd = some (1, 0)
+
+end StdSlideBridge
