@@ -322,4 +322,19 @@ theorem lesion_reverse_word_increasing :
       revChoice ([(1, 0), (0, 1)] : List Cell).toFinset (valOf [(1, 0), (0, 1)]) (1, 1) := by
   decide
 
+/-! ### Hypothesis match with `lemmaD_slides` -/
+
+/-- A cell word standard from `κ` (`StdFrom`, the hypothesis of `SlideIteration.lemmaD_slides`)
+has no repeated cell and avoids `κ`; so it meets the `Nodup` hypothesis of the bridges. -/
+theorem stdFrom_nodup : ∀ (κ : Finset Cell) (F : List Cell), StdFrom κ F →
+    F.Nodup ∧ ∀ y ∈ F, y ∉ κ
+  | _, [], _ => ⟨List.nodup_nil, by simp⟩
+  | κ, y :: F, ⟨hy, _, hF⟩ => by
+    obtain ⟨n, d⟩ := stdFrom_nodup (insert y κ) F hF
+    refine ⟨List.nodup_cons.2 ⟨fun hm => d y hm (Finset.mem_insert_self y κ), n⟩, ?_⟩
+    intro z hz
+    rcases List.mem_cons.1 hz with rfl | hz
+    · exact hy
+    · exact fun hk => d z hz (Finset.mem_insert_of_mem hk)
+
 end TworowD4Kernel.StdSlideBridge
