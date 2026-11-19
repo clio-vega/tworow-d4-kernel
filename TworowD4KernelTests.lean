@@ -787,3 +787,24 @@ open TworowD4Kernel.LemmaD TworowD4Kernel.SlideSwitch TworowD4Kernel.SlideIterat
 #guard (swSeq [2] ([Dir.D, Dir.D, Dir.R], phi (chainOf ∅ exCells))).1 = [Dir.D, Dir.D, Dir.R]
 
 end SlideIteration
+
+section StdSlide
+
+open TworowD4Kernel.SlideSwitch TworowD4Kernel.StdSlide
+
+-- Shadows `control_forward_tie`: the tie is met and both fillings go north.
+#guard (slide fwdRule 2 tieS oneX (0, 0)).2.2.2 = [(1, 0)]
+#guard (slide fwdRule 2 tieS (std tieS oneX) (0, 0)).2.2.2 = [(1, 0)]
+-- Shadows `lesion_std_east_first`.
+#guard fwdChoice tieS (stdBad tieS oneX) (0, 0) = some (0, 1)
+-- Shadows `lesion_reverse_tie_west`.
+#guard revChoiceW revTieS oneX (1, 1) = some (1, 0)
+#guard revChoiceW revTieS (std revTieS oneX) (1, 1) = some (0, 1)
+-- Shadows `lesion_not_colInj_after`: `std` after = 0, moved `std` = 1 at the hole.
+#guard std (slide fwdRule 2 badS2 oneX (0, 0)).1 (slide fwdRule 2 badS2 oneX (0, 0)).2.1 (0, 0) = 0
+#guard (slide fwdRule 2 badS2 (std badS2 oneX) (0, 0)).2.1 (0, 0) = 1
+-- Shadows `control_lemmaC` / `lesion_lemmaC_typo`.
+#guard tilde 1 2 rowS oneX (0, 0) = 0 && tilde 1 2 rowS oneX (0, 1) = 1
+#guard tildeTypo 1 2 rowS oneX (0, 0) = 1
+
+end StdSlide

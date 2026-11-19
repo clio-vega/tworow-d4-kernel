@@ -84,6 +84,7 @@ import TworowD4Kernel.SlideSwitch
 import TworowD4Kernel.SlideSwitchGeneral
 import TworowD4Kernel.SlideSwitchReverse
 import TworowD4Kernel.SlideIteration
+import TworowD4Kernel.StdSlide
 
 /-!
 # Two-row / three-row `d = 4` fiber-vanishing kernels
