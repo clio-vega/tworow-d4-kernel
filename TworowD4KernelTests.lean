@@ -823,3 +823,20 @@ open TworowD4Kernel.SlideSwitch TworowD4Kernel.StdSlide TworowD4Kernel.StdSlideB
 #guard (jdtStepRev true [(1, 0), (0, 1)] (1, 1)).map Prod.snd = some (1, 0)
 
 end StdSlideBridge
+
+section PhiOut
+
+open TworowD4Kernel.SlideSwitch TworowD4Kernel.StdSlide TworowD4Kernel.PhiOut
+  TworowD4Kernel.PhiOutData
+
+-- EVALUATION, not kernel: Lean Φ (`PhiOut.phi`, tex def:phi(3)) = Python `g4.phi_out` on all
+-- 3556 instances |A/B| ≤ 5, R, C ≤ 4. (Kernel form at R, C ≤ 3: `phi_eq_python_33`.)
+#guard phiData44.length = 3556
+#guard phiData44.all (checkRow phi)
+-- The data check is live: shifting every expected value by one fails on all 266 nonempty rows.
+#guard (phiData33.filter fun d => !checkRow phi (d.1, d.2.1, d.2.2.1, d.2.2.2.1, d.2.2.2.2.1,
+    d.2.2.2.2.2.map fun p => (p.1, p.2 + 1))).length = 266
+-- Shadows `lesion_row_order_count` at R, C ≤ 4.
+#guard (phiData44.filter fun d => !checkRow (phiWith revRule tildeRow) d).length = 1151
+
+end PhiOut
