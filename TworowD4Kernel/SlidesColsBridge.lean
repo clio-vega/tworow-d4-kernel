@@ -31,8 +31,10 @@ the final support and values of `slides`. `slides_colsW_take` is the `c = 0` rea
 `SlidesOK revRule (m+1) S X F` (column-injectivity along the run, the recalled Fulton fact), a
 semistandard `X` whose standardisation is the word `U` vacates the cells `(colsW …).take p`.
 
-Not proved here (recorded, see the session note): the fuel of `PhiOut.phi` is `R + C`, not `m + 1`;
-equating the two needs a fuel-independence lemma for `slide revRule`.
+Fuel: `PhiOut.phi` runs at fuel `R + C`, `colsW` at `m + 1`. `slides_fuel_eq` shows a reverse
+run is fuel-independent once the fuel covers `|S|` or every hole's anti-diagonal index `r + c`
+(each reverse move lowers `r + c` by one and the count of support cells below the hole's
+anti-diagonal by at least one), giving `V_colsW_of_slidesOK_fuel`.
 -/
 
 namespace TworowD4Kernel.SlidesColsBridge
@@ -232,6 +234,155 @@ theorem V_colsW_of_slidesOK (m : ℕ) (U F : List Cell) (X : Cell → ℕ) (hm :
   rw [← (lemmaA_slides revRule (m + 1) F U.toFinset X hok).1]
   exact (slides_colsW_take m U F (std U.toFinset X) hm hnd hstd).1
 
+/-! ### Fuel independence (`PhiOut.phi` runs at fuel `R + C`, `colsW` at `m + 1`) -/
+
+/-- Anti-diagonal index of a cell. -/
+def dsum (y : Cell) : ℕ := y.1 + y.2
+
+/-- Support cells strictly below the hole's anti-diagonal. -/
+def mu (S : Finset Cell) (h : Cell) : ℕ := (S.filter fun s => dsum s < dsum h).card
+
+lemma revChoice_step {S : Finset Cell} {X : Cell → ℕ} {h y : Cell} (hh : h ∉ S)
+    (hc : revRule.ch S X h = some y) : y ∈ S ∧ dsum y + 1 = dsum h := by
+  have hyS := revRule.mem S X h y hc
+  refine ⟨hyS, ?_⟩
+  have hc' : revChoice S X h = some y := hc
+  unfold revChoice at hc'
+  have hyh : y ≠ h := fun e => hh (e ▸ hyS)
+  obtain ⟨a, b⟩ := h
+  split_ifs at hc' <;> (simp only [Option.some.injEq] at hc') <;> subst hc' <;>
+    (simp only [nS, nW, dsum] at hyh ⊢; by_contra hne; apply hyh; ext <;> simp <;> omega)
+
+lemma mu_move {S : Finset Cell} {h y : Cell} (hyS : y ∈ S) (hd : dsum y + 1 = dsum h) :
+    mu (moveS S h y) y + 1 ≤ mu S h := by
+  unfold mu moveS
+  rw [Finset.filter_insert, if_neg (by omega)]
+  have hsub : (S.erase y).filter (fun s => dsum s < dsum y) ⊆
+      (S.filter fun s => dsum s < dsum h).erase y := by
+    intro s hs
+    simp only [Finset.mem_filter, Finset.mem_erase] at hs ⊢
+    exact ⟨hs.1.1, hs.1.2, by omega⟩
+  have hy : y ∈ S.filter fun s => dsum s < dsum h := Finset.mem_filter.2 ⟨hyS, by omega⟩
+  have := Finset.card_le_card hsub
+  rw [Finset.card_erase_of_mem hy] at this
+  have := Finset.card_pos.2 ⟨y, hy⟩
+  omega
+
+/-- **Fuel stability.** Once the fuel covers either the number of support cells below the hole's
+anti-diagonal or the anti-diagonal index itself, one more unit of fuel changes nothing. -/
+theorem slide_fuel_succ : ∀ (k : ℕ) (S : Finset Cell) (X : Cell → ℕ) (h : Cell), h ∉ S →
+    (mu S h ≤ k ∨ dsum h ≤ k) → slide revRule (k + 1) S X h = slide revRule k S X h := by
+  intro k
+  induction k with
+  | zero =>
+    intro S X h hh hk
+    simp only [slide]
+    rcases hc : revRule.ch S X h with _ | y
+    · rfl
+    · obtain ⟨hyS, hd⟩ := revChoice_step hh hc
+      have := mu_move hyS hd
+      omega
+  | succ k ih =>
+    intro S X h hh hk
+    rw [slide]
+    conv_rhs => rw [slide]
+    rcases hc : revRule.ch S X h with _ | y
+    · rfl
+    · obtain ⟨hyS, hd⟩ := revChoice_step hh hc
+      have hyh : y ≠ h := fun e => hh (e ▸ hyS)
+      have hy' : y ∉ moveS S h y := by simp [moveS, hyh]
+      have := mu_move hyS hd
+      simp only
+      rw [ih (moveS S h y) (moveX X h y) y hy' (by omega)]
+theorem slide_fuel_add (b : ℕ) (S : Finset Cell) (X : Cell → ℕ) (h : Cell) (hh : h ∉ S)
+    (hb : mu S h ≤ b ∨ dsum h ≤ b) : ∀ n, slide revRule (b + n) S X h = slide revRule b S X h := by
+  intro n
+  induction n with
+  | zero => rfl
+  | succ n ih => rw [← Nat.add_assoc, slide_fuel_succ _ S X h hh (by omega), ih]
+
+/-- **Fuel independence of one reverse slide.** Fuel `≥ |S|` and fuel `≥` the hole's
+anti-diagonal index give the same slide. -/
+theorem slide_fuel_eq (k k' : ℕ) (S : Finset Cell) (X : Cell → ℕ) (h : Cell) (hh : h ∉ S)
+    (hk : S.card ≤ k) (hk' : dsum h ≤ k') :
+    slide revRule k S X h = slide revRule k' S X h := by
+  have hmu : mu S h ≤ S.card := Finset.card_filter_le _ _
+  have e1 := slide_fuel_add (mu S h) S X h hh (Or.inl le_rfl) (k - mu S h)
+  have e2 := slide_fuel_add (dsum h) S X h hh (Or.inr le_rfl) (k' - dsum h)
+  have e3 := slide_fuel_add (mu S h) S X h hh (Or.inl le_rfl) (max k k' - mu S h)
+  have e4 := slide_fuel_add (dsum h) S X h hh (Or.inr le_rfl) (max k k' - dsum h)
+  rw [show mu S h + (k - mu S h) = k by omega] at e1
+  rw [show dsum h + (k' - dsum h) = k' by omega] at e2
+  rw [show mu S h + (max k k' - mu S h) = max k k' by omega] at e3
+  rw [show dsum h + (max k k' - dsum h) = max k k' by omega] at e4
+  rw [e1, e2, ← e3, ← e4]
+
+/-- A slide keeps the support inside `S ∪ {h}` and keeps its size. -/
+theorem slide_support (R : Rule) : ∀ (k : ℕ) (S : Finset Cell) (X : Cell → ℕ) (h : Cell), h ∉ S →
+    (slide R k S X h).1 ⊆ insert h S ∧ (slide R k S X h).1.card = S.card := by
+  intro k
+  induction k with
+  | zero => intro S X h _; exact ⟨Finset.subset_insert _ _, rfl⟩
+  | succ k ih =>
+    intro S X h hh
+    simp only [slide]
+    rcases hc : R.ch S X h with _ | y
+    · exact ⟨Finset.subset_insert _ _, rfl⟩
+    · have hyS := R.mem S X h y hc
+      have hyh : y ≠ h := fun e => hh (e ▸ hyS)
+      have hy' : y ∉ moveS S h y := by simp [moveS, hyh]
+      obtain ⟨i1, i2⟩ := ih (moveS S h y) (moveX X h y) y hy'
+      refine ⟨fun a ha => ?_, ?_⟩
+      · have := i1 ha
+        simp only [moveS, Finset.mem_insert, Finset.mem_erase] at this ⊢
+        rcases this with rfl | rfl | ⟨-, ha⟩
+        · exact Or.inr hyS
+        · exact Or.inl rfl
+        · exact Or.inr ha
+      · rw [i2, moveS, Finset.card_insert_of_notMem (by simp [hh]),
+          Finset.card_erase_of_mem hyS]
+        have := Finset.card_pos.2 ⟨y, hyS⟩
+        omega
+
+/-- **Fuel independence of the outward run.** If the holes are distinct and avoid the initial
+support, fuel `≥ |S|` and fuel `≥` every hole's anti-diagonal index give the same run. -/
+theorem slides_fuel_eq (k k' : ℕ) : ∀ (hs : List Cell) (S : Finset Cell) (X : Cell → ℕ),
+    hs.Nodup → (∀ h ∈ hs, h ∉ S) → S.card ≤ k → (∀ h ∈ hs, dsum h ≤ k') →
+    slides revRule k S X hs = slides revRule k' S X hs := by
+  intro hs
+  induction hs with
+  | nil => intro S X _ _ _ _; rfl
+  | cons h hs ih =>
+    intro S X hnd hS hk hk'
+    have hh := hS h List.mem_cons_self
+    have e := slide_fuel_eq k k' S X h hh hk (hk' h List.mem_cons_self)
+    obtain ⟨sub, card⟩ := slide_support revRule k' S X h hh
+    simp only [slides]
+    rw [e]
+    have hnd' := (List.nodup_cons.1 hnd)
+    rw [ih _ _ hnd'.2 (fun h' hm hm' => ?_) (by rw [card]; exact hk)
+      (fun h' hm => hk' h' (List.mem_cons_of_mem _ hm))]
+    rcases Finset.mem_insert.1 (sub hm') with rfl | hm''
+    · exact hnd'.1 hm
+    · exact hS h' (List.mem_cons_of_mem _ hm) hm''
+
+
+/-- **Glue under `SlidesOK`, any fuel covering the anti-diagonals.** The conclusion of
+`V_colsW_of_slidesOK` holds for the outward run at any fuel `k'` that is at least every hole's
+anti-diagonal index `r + c` (e.g. `PhiOut.phi`'s fuel `R + C` for holes in the `R × C` box).
+`SlidesOK` is still taken at fuel `m + 1`. -/
+theorem V_colsW_of_slidesOK_fuel (m k' : ℕ) (U F : List Cell) (X : Cell → ℕ) (hm : U.length = m)
+    (hnd : (U ++ F).Nodup) (hstd : ∀ a ∈ U, std U.toFinset X a = valOf U a)
+    (hok : SlidesOK revRule (m + 1) U.toFinset X F) (hk' : ∀ h ∈ F, dsum h ≤ k') :
+    (slides revRule k' U.toFinset X F).2.2 = (colsW m 0 F.length (U ++ F)).take F.length := by
+  have hF : F.Nodup := (List.nodup_append.1 hnd).2.1
+  have hdis : ∀ h ∈ F, h ∉ U.toFinset := fun h hm hU =>
+    (List.nodup_append.1 hnd).2.2 h (List.mem_toFinset.1 hU) h hm rfl
+  have hcard : U.toFinset.card ≤ m + 1 := by
+    have := List.toFinset_card_le U; omega
+  rw [← slides_fuel_eq (m + 1) k' F U.toFinset X hF hdis hcard hk']
+  exact V_colsW_of_slidesOK m U F X hm hnd hstd hok
+
 /-! ### Controls and lesions (kernel `decide`) -/
 
 /-- **Control (non-vacuity).** `U = [(0,0)]`, `F = [(0,1),(1,0)]`: the hypotheses hold, the run
@@ -259,6 +410,16 @@ theorem lesion_values_reversed :
         [(1, 1)]).2.2 = (colsW 2 0 1 ([(0, 1), (1, 0), (1, 1)] : List Cell)).take 1 ∧
     (slides revRule 3 ([(0, 1), (1, 0)] : List Cell).toFinset (valDec [(0, 1), (1, 0)])
         [(1, 1)]).2.2 ≠ (colsW 2 0 1 ([(0, 1), (1, 0), (1, 1)] : List Cell)).take 1 := by
+  decide +kernel
+
+/-- **Lesion (fuel below both bounds).** At fuel `1` the holes `(0,1)`, `(1,0)` have
+anti-diagonal index `1`, so `slides_fuel_eq`'s hypothesis `r + c ≤ k'` holds and the run agrees
+with `colsW`; at fuel `0` (below every bound) nothing moves and the glue fails. -/
+theorem lesion_fuel_zero :
+    (slides revRule 1 ([(0, 0)] : List Cell).toFinset (valOf [(0, 0)]) [(0, 1), (1, 0)]).2.2 =
+      (colsW 1 0 2 ([(0, 0), (0, 1), (1, 0)] : List Cell)).take 2 ∧
+    (slides revRule 0 ([(0, 0)] : List Cell).toFinset (valOf [(0, 0)]) [(0, 1), (1, 0)]).2.2 ≠
+      (colsW 1 0 2 ([(0, 0), (0, 1), (1, 0)] : List Cell)).take 2 := by
   decide +kernel
 
 end TworowD4Kernel.SlidesColsBridge
