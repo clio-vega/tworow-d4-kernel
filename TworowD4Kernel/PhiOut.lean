@@ -116,4 +116,55 @@ theorem lesion_row_order_count :
     (phiData33.filter fun d => !checkRow (phiWith revRule tildeRow) d).length = 55 := by
   decide +kernel
 
+/-! ### Σ in function-filling form (Tier C, piece 1) and the finite check of `thm:G4`
+
+tex `sec:G4` definition of `Σ`, l.122–129: process the cells of `κ` in decreasing order of the
+row-superstandard `U_κ` (top row first, right to left); into each, a forward slide (smaller of
+E/N, tie north); the `k`-th slide vacates `z_k`, labelled `r_k + 1`. -/
+
+/-- The cells of `κ` in decreasing `U_κ` order: top row first, right to left. -/
+def sigmaHoles (κ : List ℕ) : List Cell :=
+  (List.range κ.length).reverse.flatMap fun r =>
+    (List.range (κ.getD r 0)).reverse.map fun c => (r, c)
+
+/-- Lesion order: the cells of `κ` by columns, right column first, top to bottom. Every cell is
+an inner corner when it is processed, so the slides stay legal; only the order changes. -/
+def sigmaHolesCol (κ : List ℕ) : List Cell :=
+  (List.range (κ.getD 0 0)).reverse.flatMap fun c =>
+    ((List.range κ.length).reverse.filter fun r => c < κ.getD r 0).map fun r => (r, c)
+
+/-- `Σ` with a hole order: forward slides `slides fwdRule`, vacated cell `z_k ↦ r_k + 1`. -/
+def sigmaWith (ord : List ℕ → List Cell) (κ : List ℕ) (S : Finset Cell) (X : Cell → ℕ) :
+    Finset Cell × (Cell → ℕ) :=
+  let hs := ord κ
+  let V := (slides fwdRule (S.card + κ.sum + 1) S X hs).2.2
+  (V.toFinset, ofList (V.zip (hs.map fun h => h.1 + 1)))
+
+/-- `Σ(rr f)`: `rr` with `ℓ = max f`, inner shape `A^∨`, support `rot (A/B)`. -/
+def sigmaRRWith (ord : List ℕ → List Cell) (R C : ℕ) (A B : List ℕ) (f : Cell → ℕ) :
+    Finset Cell × (Cell → ℕ) :=
+  let cs := skewCells A B
+  sigmaWith ord (compl R C A) (cs.map (rot R C)).toFinset (rr R C ((cs.map f).foldr max 0) f)
+
+def sigmaRR : ℕ → ℕ → List ℕ → List ℕ → (Cell → ℕ) → Finset Cell × (Cell → ℕ) :=
+  sigmaRRWith sigmaHoles
+
+/-- **`thm:G4`, finite form (kernel).** On all 310 instances (`|A/B| ≤ 5`, `R, C ≤ 3`), Lean Φ
+and Lean `Σ ∘ rr` both equal the Python Φ, so `Φ(f) = Σ(rr f)` there (support and values).
+This is a computation, not the theorem: the general statement still needs the assembly. -/
+theorem g4_finite_33 :
+    phiData33.all (fun d => checkRow phi d && checkRow sigmaRR d) = true := by decide +kernel
+
+/-- Control instance for the Σ order lesion: one box `(0,0)` in the `2 × 2` box. -/
+def lesionSigmaRow : ℕ × ℕ × List ℕ × List ℕ × List (Cell × ℕ) × List (Cell × ℕ) :=
+  (2, 2, [1, 0], [0, 0], [((0, 0), 1)], [((0, 1), 1), ((1, 0), 1), ((1, 1), 2)])
+
+/-- **Lesion (Σ order).** Processing `κ` by columns (a legal order) instead of `U_κ`-decreasing
+changes `Σ(rr f)` (kernel), here and on 66/310 instances. -/
+theorem lesion_sigma_column_order : lesionSigmaRow ∈ phiData33 ∧
+    checkRow sigmaRR lesionSigmaRow = true ∧
+    checkRow (sigmaRRWith sigmaHolesCol) lesionSigmaRow = false ∧
+    (phiData33.filter fun d => !checkRow (sigmaRRWith sigmaHolesCol) d).length = 66 := by
+  decide +kernel
+
 end TworowD4Kernel.PhiOut

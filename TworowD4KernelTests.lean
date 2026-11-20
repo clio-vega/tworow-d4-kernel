@@ -836,6 +836,10 @@ open TworowD4Kernel.SlideSwitch TworowD4Kernel.StdSlide TworowD4Kernel.PhiOut
 -- The data check is live: shifting every expected value by one fails on all 266 nonempty rows.
 #guard (phiData33.filter fun d => !checkRow phi (d.1, d.2.1, d.2.2.1, d.2.2.2.1, d.2.2.2.2.1,
     d.2.2.2.2.2.map fun p => (p.1, p.2 + 1))).length = 266
+-- EVALUATION: Lean Σ(rr f) = Python Φ on all 3556 (shadows `g4_finite_33` at R, C ≤ 4);
+-- column-order Σ lesion fails on 1664 (shadows `lesion_sigma_column_order`).
+#guard phiData44.all (checkRow sigmaRR)
+#guard (phiData44.filter fun d => !checkRow (sigmaRRWith sigmaHolesCol) d).length = 1664
 -- Shadows `lesion_row_order_count` at R, C ≤ 4.
 #guard (phiData44.filter fun d => !checkRow (phiWith revRule tildeRow) d).length = 1151
 
