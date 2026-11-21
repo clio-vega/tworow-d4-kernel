@@ -89,6 +89,7 @@ import TworowD4Kernel.StdSlideBridge
 import TworowD4Kernel.PhiOut
 import TworowD4Kernel.SlidesColsBridge
 import TworowD4Kernel.PhiGlue
+import TworowD4Kernel.Destd
 
 /-!
 # Two-row / three-row `d = 4` fiber-vanishing kernels
