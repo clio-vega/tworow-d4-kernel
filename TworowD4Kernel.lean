@@ -92,6 +92,7 @@ import TworowD4Kernel.PhiGlue
 import TworowD4Kernel.Destd
 import TworowD4Kernel.RowsSlidesBridge
 import TworowD4Kernel.ChainInj
+import TworowD4Kernel.RankList
 
 /-!
 # Two-row / three-row `d = 4` fiber-vanishing kernels
