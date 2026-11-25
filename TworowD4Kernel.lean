@@ -94,6 +94,7 @@ import TworowD4Kernel.RowsSlidesBridge
 import TworowD4Kernel.ChainInj
 import TworowD4Kernel.RankList
 import TworowD4Kernel.Q597G1
+import TworowD4Kernel.Q597G1Lift
 
 /-!
 # Two-row / three-row `d = 4` fiber-vanishing kernels
