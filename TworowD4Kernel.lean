@@ -96,6 +96,7 @@ import TworowD4Kernel.RankList
 import TworowD4Kernel.Q597G1
 import TworowD4Kernel.Q597G1Lift
 import TworowD4Kernel.Q597D1
+import TworowD4Kernel.Q597G1k1
 
 /-!
 # Two-row / three-row `d = 4` fiber-vanishing kernels
