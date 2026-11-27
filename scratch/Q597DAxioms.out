@@ -1,0 +1,78 @@
+scratch/Q597DAxioms.lean:3:8: warning: declaration uses `sorry`
+'sorry_control' depends on axioms: [sorryAx]
+'Q597G1.lemmaD' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Q597G1.D4_walk' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Q597G1.D4_count' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Q597G1.jointLift_of_KT' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Q597G1.jointLift_unique' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Q597G1.lift0_unique' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Q597G1.lift1_unique' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Q597G1.tenVal_up_fidelity' depends on axioms: [propext, Quot.sound]
+'Q597G1.tenVal_down_fidelity' depends on axioms: [propext, Quot.sound]
+'Q597G1.D3_tri_k0' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Q597G1.D3_tri_k1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Q597G1.rhombus_clause_k0' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Q597G1.rhombus_clause_k1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Q597G1.rhombus_clause_joint' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Q597G1.lemmaD2' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Q597G1.G1_KT_count' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Q597G1.G1_KT_k1_count' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Q597G1.mixed_rhombus_lesion' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Q597G1.uniq_lesion_drop1' depends on axioms: [propext]
+'Q597G1.uniq_lesion_drop_spanning' depends on axioms: [propext]
+lemmaD : ∀ (lab : Edge → Lbl) (n : ℕ),
+  AllKT lab n →
+    BdryOK lab n →
+      (OnEdges n fun e => jointL lab e.head = jointL lab e.tail + (coch lab e, coch (swapLab lab) e)) ∧
+        OnEdges n (JointOK lab (jointL lab)) ∧
+          (∀ (L' : V → V × V),
+              OnEdges n (JointOK lab L') →
+                ∀ (i j : ℕ), i + j ≤ n → L' (↑i, ↑j) = jointL lab (↑i, ↑j) + (L' (0, 0) - jointL lab (0, 0))) ∧
+            (cntBot lab n Lbl.l0 = cntHyp lab n Lbl.l0 ∧
+                cntBot lab n Lbl.l0 = cntLeft lab n Lbl.l0 ∧
+                  cntBot lab n Lbl.l1 = ↑n - cntBot lab n Lbl.l0 ∧
+                    cntHyp lab n Lbl.l1 = ↑n - cntHyp lab n Lbl.l0 ∧ cntLeft lab n Lbl.l1 = ↑n - cntLeft lab n Lbl.l0) ∧
+              (∀ (t : Tri),
+                  inDelta (0, 0) n t →
+                    ((Is000 lab t → ∃ v, ∀ p ∈ triVerts t, (jointL lab p).1 = p + v) ∧
+                        (Is111 lab t → ∀ p ∈ triVerts t, (jointL lab p).1 = (jointL lab (triVerts t).head!).1)) ∧
+                      (Is111 lab t → ∃ v, ∀ p ∈ triVerts t, (jointL lab p).2 = p + v) ∧
+                        (Is000 lab t → ∀ p ∈ triVerts t, (jointL lab p).2 = (jointL lab (triVerts t).head!).2)) ∧
+                (∀ (a b : ℤ) (k : Cls),
+                    inDelta (0, 0) n { a := a, b := b, o := Ori.up } →
+                      inDelta (0, 0) n (rhDown a b k) →
+                        lab { a := a, b := b, k := k } = Lbl.l10 →
+                          RhClause lab (fun p => (jointL lab p).1) a b k Lbl.l0 Lbl.l1 ∧
+                            RhClause lab (fun p => (jointL lab p).2) a b k Lbl.l1 Lbl.l0) ∧
+                  (∀ L ≤ n,
+                      (fun p => (jointL lab p).1) (↑L, 0) =
+                          (fun p => (jointL lab p).1) (0, 0) +
+                            (∑ i ∈ Finset.range L, if lab { a := ↑i, b := 0, k := Cls.c0 } = Lbl.l0 then 1 else 0) •
+                              (1, 0) ∧
+                        (fun p => (jointL lab p).1) (↑n - ↑L, ↑L) =
+                            (fun p => (jointL lab p).1) (↑n, 0) +
+                              (∑ j ∈ Finset.range L,
+                                  if lab { a := ↑n - 1 - ↑j, b := ↑j, k := Cls.c2 } = Lbl.l0 then 1 else 0) •
+                                (-1, 1) ∧
+                          (fun p => (jointL lab p).1) (0, ↑L) =
+                            (fun p => (jointL lab p).1) (0, 0) +
+                              (∑ j ∈ Finset.range L, if lab { a := 0, b := ↑j, k := Cls.c1 } = Lbl.l0 then 1 else 0) •
+                                (0, 1)) ∧
+                    (∀ L ≤ n,
+                        (fun p => (jointL lab p).2) (↑L, 0) =
+                            (fun p => (jointL lab p).2) (0, 0) +
+                              (∑ i ∈ Finset.range L, if lab { a := ↑i, b := 0, k := Cls.c0 } = Lbl.l1 then 1 else 0) •
+                                (1, 0) ∧
+                          (fun p => (jointL lab p).2) (↑n - ↑L, ↑L) =
+                              (fun p => (jointL lab p).2) (↑n, 0) +
+                                (∑ j ∈ Finset.range L,
+                                    if lab { a := ↑n - 1 - ↑j, b := ↑j, k := Cls.c2 } = Lbl.l1 then 1 else 0) •
+                                  (-1, 1) ∧
+                            (fun p => (jointL lab p).2) (0, ↑L) =
+                              (fun p => (jointL lab p).2) (0, 0) +
+                                (∑ j ∈ Finset.range L, if lab { a := 0, b := ↑j, k := Cls.c1 } = Lbl.l1 then 1 else 0) •
+                                  (0, 1)) ∧
+                      (fstar fun p => (jointL lab p).1) (bd (Tn n)) =
+                          bd (deltaChain (jointL lab (0, 0)).1 (cntBot lab n Lbl.l0).toNat) ∧
+                        (fstar fun p => (jointL lab p).2) (bd (Tn n)) =
+                          bd (deltaChain (jointL lab (0, 0)).2 (cntBot lab n Lbl.l1).toNat)
