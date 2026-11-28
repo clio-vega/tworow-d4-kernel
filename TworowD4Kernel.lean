@@ -99,6 +99,7 @@ import TworowD4Kernel.Q597D1
 import TworowD4Kernel.Q597G1k1
 import TworowD4Kernel.Q597D
 import TworowD4Kernel.Q597Img
+import TworowD4Kernel.Q597Cells
 
 /-!
 # Two-row / three-row `d = 4` fiber-vanishing kernels
